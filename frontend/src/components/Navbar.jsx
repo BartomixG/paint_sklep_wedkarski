@@ -3,7 +3,7 @@ import { User, ShoppingCart, Fish } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-  const [cartItemCount, setCartItemCount] = useState(0); // W przyszłości będzie aktualizowane dynamicznie
+  const [cartItemCount, setCartItemCount] = useState(0); // TODO (Zbyszek): Dodać logikę do aktualizacji tej liczby na podstawie stanu koszyka
 
   return (
     <nav className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
