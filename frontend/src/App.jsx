@@ -6,6 +6,8 @@ import MapArea from './components/MapArea';
 import Shop from './components/Shop';
 import ProductDetail from './components/ProductDetail';
 import Auth from './components/Auth'; 
+import Profile from './components/Profile';
+import EditProfile from './components/EditProfile';
 import './index.css';
 
 const Home = () => (
@@ -40,6 +42,8 @@ function App() {
           <Route path="/sklep" element={<Shop />} />
           <Route path="/sklep/produkt/:id" element={<ProductDetail />} />
           <Route path="/logowanie" element={<Auth />} /> 
+          <Route path="/profil" element={<Profile />} />
+          <Route path="/profil/edycja" element={<EditProfile />} />
         </Routes>
         
         <Footer />
