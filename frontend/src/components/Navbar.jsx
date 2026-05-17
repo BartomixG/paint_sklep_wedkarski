@@ -24,9 +24,9 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-6">
-          <button className="hover:text-blue-400 transition-transform duration-300 hover:scale-110">
+          <Link to="/logowanie" className="hover:text-blue-400 transition-transform duration-300 hover:scale-110">
             <User size={28} />
-          </button>
+          </Link>
           
           <button className="hover:text-blue-400 transition-transform duration-300 hover:scale-110 relative">
             <ShoppingCart size={28} />

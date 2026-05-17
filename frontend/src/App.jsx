@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import MapArea from './components/MapArea';
 import Shop from './components/Shop';
 import ProductDetail from './components/ProductDetail';
+import Auth from './components/Auth'; 
 import './index.css';
 
 const Home = () => (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/rezerwacja" element={<Reservation />} />
           <Route path="/sklep" element={<Shop />} />
           <Route path="/sklep/produkt/:id" element={<ProductDetail />} />
+          <Route path="/logowanie" element={<Auth />} /> 
         </Routes>
         
         <Footer />
