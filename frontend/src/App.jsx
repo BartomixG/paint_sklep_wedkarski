@@ -10,6 +10,7 @@ import Profile from './components/Profile';
 import EditProfile from './components/EditProfile';
 import AdminPanel from './components/AdminPanel';
 import Cart from './components/Cart';
+import ErrorPage from './components/ErrorPage';
 import './index.css';
 
 const Home = () => (
@@ -48,6 +49,7 @@ function App() {
           <Route path="/profil/edycja" element={<EditProfile />} />
           <Route path="/koszyk" element={<Cart />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="*" element={<ErrorPage code={404} />} />
         </Routes>
         
         <Footer />
