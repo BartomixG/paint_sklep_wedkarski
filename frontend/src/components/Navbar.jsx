@@ -28,14 +28,14 @@ const Navbar = () => {
             <User size={28} />
           </Link>
           
-          <button className="hover:text-blue-400 transition-transform duration-300 hover:scale-110 relative">
+          <Link to="/koszyk" className="hover:text-blue-400 transition-transform duration-300 hover:scale-110 relative">
             <ShoppingCart size={28} />
             {cartItemCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
                 {cartItemCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
 
       </div>

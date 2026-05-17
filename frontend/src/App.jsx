@@ -8,6 +8,8 @@ import ProductDetail from './components/ProductDetail';
 import Auth from './components/Auth'; 
 import Profile from './components/Profile';
 import EditProfile from './components/EditProfile';
+import AdminPanel from './components/AdminPanel';
+import Cart from './components/Cart';
 import './index.css';
 
 const Home = () => (
@@ -44,6 +46,8 @@ function App() {
           <Route path="/logowanie" element={<Auth />} /> 
           <Route path="/profil" element={<Profile />} />
           <Route path="/profil/edycja" element={<EditProfile />} />
+          <Route path="/koszyk" element={<Cart />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
         
         <Footer />
