@@ -3,16 +3,16 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Footer from './components/Footer';
 import MapArea from './components/MapArea';
+import Shop from './components/Shop';
+import ProductDetail from './components/ProductDetail';
 import './index.css';
 
-// Widok strony głównej
 const Home = () => (
   <main className="flex-grow">
     <Hero />
   </main>
 );
 
-// Widok strony rezerwacji
 const Reservation = () => (
   <main className="flex-grow bg-slate-50 py-12">
     <div className="container mx-auto px-4">
@@ -36,6 +36,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/rezerwacja" element={<Reservation />} />
+          <Route path="/sklep" element={<Shop />} />
+          <Route path="/sklep/produkt/:id" element={<ProductDetail />} />
         </Routes>
         
         <Footer />
