@@ -256,9 +256,9 @@ const MapArea = () => {
               <button onClick={() => setShowModal(false)} className="px-6 py-3 font-bold text-slate-600 hover:text-slate-900 transition-colors">
                 Pomiń
               </button>
-              <button className="px-8 py-3 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold transition-colors shadow-lg">
+              <Link to="/koszyk" className="px-8 py-3 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold transition-colors shadow-lg flex items-center justify-center">
                 Przejdź do koszyka
-              </button>
+              </Link>
             </div>
 
           </div>
