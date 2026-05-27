@@ -28,7 +28,7 @@ public class OrderController {
     private OrderService orderService;
 
     // ADMIN
-    @GetMapping
+    @GetMapping("/all")
     public List<Order> getAllOrders() {
         return orderService.getAllOrders();
     }

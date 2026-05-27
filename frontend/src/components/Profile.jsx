@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const userId = localStorage.getItem('userId'); 
+  const userId = localStorage.getItem('userId');
 
   const [userData, setUserData] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -12,11 +12,10 @@ const Profile = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [error, setError] = useState(null);
 
-  const [reservations] = useState([
-    { id: "RES-1029", lake: "Jezioro Ciche (Główne)", spot: "Stanowisko 1 (Karp)", date: "2026-05-20", time: "06:00 - 18:00", status: "Aktywna", price: 120.00 },
-    { id: "RES-0982", lake: "Staw Ósemka (Mały)", spot: "Stanowisko 4 (Karp)", date: "2026-04-15", time: "Cały dzień", status: "Zakończona", price: 90.00 },
-  ]);
+  // --- Dodaj/upewnij się, że masz ten stan na górze komponentu ---
+  const [reservations, setReservations] = useState([]);
 
+  // --- Zmodyfikowany useEffect ---
   useEffect(() => {
     if (!userId) {
       navigate('/logowanie');
@@ -38,13 +37,14 @@ const Profile = () => {
         setLoadingUser(false);
       });
 
-    // 2. Pobieranie zamówień
+    // 2. Pobieranie zamówień i ekstrakcja rezerwacji łowisk
     fetch(`http://localhost:8080/api/users/${userId}/orders`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się pobrać historii zamówień.');
         return res.json();
       })
       .then(async (ordersList) => {
+        // Pobieranie asynchroniczne produktów (items) dla każdego zamówienia
         const ordersWithItems = await Promise.all(
           ordersList.map(async (order) => {
             try {
@@ -59,12 +59,64 @@ const Profile = () => {
             }
           })
         );
+
+        // Sortowanie zamówień od najnowszego
         ordersWithItems.sort((a, b) => b.id - a.id);
         setOrders(ordersWithItems);
+
+        // 3. Budowanie listy rezerwacji bezpośrednio z pól zamówienia (order)
+        const mappedReservations = [];
+
+        ordersWithItems.forEach(order => {
+          if (!order) return;
+
+          // Pobieramy obiekt koszyka z użytkownika wyłącznie jako fallback dla starych zamówień
+          const cartObj = order.user && typeof order.user === 'object' ? order.user.cart : null;
+
+          // Szukamy stanowiska bezpośrednio w obiekcie zamówienia
+          const standObj = order.fishingStand;
+
+          if (standObj) {
+            // 1. Wyciąganie daty (RRRR-MM-DD) bezpośrednio z głównego poziomu zamówienia
+            let dateStr = "Brak daty";
+            if (order.reservationDate) {
+              dateStr = order.reservationDate.split('T')[0];
+            } else if (order.orderDate) {
+              dateStr = order.orderDate.split('T')[0]; // fallback do daty transakcji
+            }
+
+            // 2. Wyciąganie godzin bezpośrednio z głównego poziomu zamówienia
+            const sTime = order.startTime || "06:00";
+            const eTime = order.endTime || "18:00";
+
+            // 3. Pobranie nazw łowiska i stanowiska
+            const lakeName = standObj.fishery?.name || standObj.lake?.name || "Jezioro Ciche";
+            const standName = standObj.standNumber ? `Stanowisko nr ${standObj.standNumber}` : `Stanowisko #${standObj.id}`;
+
+            mappedReservations.push({
+              id: `RES-${order.id}`,
+              orderNumber: order.id,
+              standName: standName,
+              lakeName: lakeName,
+              startDate: dateStr,
+              startTime: sTime,
+              endTime: eTime,
+              status: order.status || "PENDING",
+              price: 50.00
+            });
+          }
+        });
+
+        console.log("Zmapowane rezerwacje z głównych pól zamówienia:", mappedReservations);
+        setReservations(mappedReservations);
         setLoadingOrders(false);
       })
-      .catch(() => setLoadingOrders(false));
+      .catch((err) => {
+        console.error("Błąd przetwarzania historii rezerwacji:", err);
+        setLoadingOrders(false);
+      });
   }, [userId, navigate]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('userId');
@@ -106,7 +158,7 @@ const Profile = () => {
     <div className="bg-slate-50 min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           <div className="lg:col-span-1 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm h-fit text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <div className="relative pt-8 mb-4 flex justify-center">
@@ -120,7 +172,7 @@ const Profile = () => {
             </div>
             <div className="mt-6 space-y-3">
               <form action="/profil/edycja">
-              <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-sm"><Edit3 size={16} /> Edytuj profil</button>
+                <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-sm"><Edit3 size={16} /> Edytuj profil</button>
               </form>
               <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 py-3.5 rounded-xl font-bold text-sm"><LogOut size={16} /> Wyloguj się</button>
             </div>
@@ -128,22 +180,44 @@ const Profile = () => {
 
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-6"><MapPin className="text-blue-600" size={24} /><h3 className="text-2xl font-black text-slate-900">Twoje rezerwacje stanowisk</h3></div>
-              <div className="space-y-4">
-                {reservations.map((res) => (
-                  <div key={res.id} className="border border-slate-100 p-5 rounded-2xl bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2"><span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md">{res.id}</span><span className={`text-xs font-bold px-2 py-0.5 rounded-md ${res.status === 'Aktywna' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{res.status}</span></div>
-                      <h4 className="font-bold text-slate-800 text-lg">{res.lake}</h4>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 font-medium"><span>{res.spot}</span><span>{res.date}</span><span>{res.time}</span></div>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-6">Twoje Aktywne Rezerwacje Łowisk</h3>
+
+              {reservations.length === 0 ? (
+                <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-medium">Nie posiadasz jeszcze zarezerwowanych stanowisk.</p>
+                  <Link to="/rezerwacja" className="text-blue-600 font-bold mt-2 inline-block hover:underline">Przejdź do mapy łowisk &rarr;</Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reservations.map((res) => (
+                    <div key={res.id} className="p-5 border border-slate-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-amber-50 text-amber-600 rounded-xl mt-1 border border-amber-100">
+                          <MapPin size={24} />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <h4 className="font-black text-slate-800 text-lg">{res.lakeName}</h4>
+                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${res.status === 'ANULOWANE' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                              {res.status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-500 font-bold">{res.standName}</p>
+                          <p className="text-xs text-slate-400 font-semibold">Numer zamówienia: #{res.orderNumber}</p>
+                          <div className="flex items-center gap-4 text-xs text-slate-400 font-medium mt-2">
+                            <span className="flex items-center gap-1"><Calendar size={14} /> Data: {res.startDate}</span>
+                            <span className="flex items-center gap-1"><Clock size={14} /> Czas: {res.startTime} - {res.endTime}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="sm:text-right flex sm:flex-col justify-between items-center sm:items-end border-t sm:border-0 pt-3 sm:pt-0 border-slate-100">
+                        <span className="text-xs font-bold text-slate-400 block sm:mb-0.5">Opłata stanowiskowa</span>
+                        <span className="font-black text-slate-900 text-xl">{res.price.toFixed(2)} zł</span>
+                      </div>
                     </div>
-                    <div className="flex md:flex-col justify-between items-center md:items-end w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0">
-                      <span className="font-black text-slate-900 text-xl md:mb-2">{res.price.toFixed(2)} zł</span>
-                      {res.status === 'Aktywna' && <button className="text-rose-600 font-bold text-sm flex items-center gap-1"><Trash2 size={16} /> Anuluj</button>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">

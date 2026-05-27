@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ArrowRight, ArrowLeft, CreditCard, Smartphone, Landmark, CheckCircle, ShoppingBag } from 'lucide-react';
+import { Trash2, ArrowRight, ArrowLeft, CreditCard, Smartphone, Landmark, CheckCircle, ShoppingBag, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Cart = () => {
@@ -8,12 +8,13 @@ const Cart = () => {
 
   // Stany komponentu
   const [cartItems, setCartItems] = useState([]);
+  const [standItem, setStandItem] = useState(null); // Stan przechowujący zarezerwowane stanowisko
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('blik');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 1. Dynamiczne i bezpieczne pobieranie zawartości koszyka z backendu
+  // pobieranie zawartości koszyka z backendu wraz ze stanowiskiem
   const fetchCart = () => {
     if (!userId || userId === "null") {
       setLoading(false);
@@ -27,13 +28,11 @@ const Cart = () => {
         return res.json();
       })
       .then((data) => {
-        // Automatyczne wykrywanie tablicy z produktami w JSONIE
+        // 1. Mapowanie produktów z koszyka
         let rawItems = [];
-
         if (Array.isArray(data)) {
-          rawItems = data; // Jeśli API zwróciło bezpośrednio tablicę
+          rawItems = data;
         } else if (data && typeof data === 'object') {
-          // Szukamy jakiejkolwiek tablicy wewnątrz obiektu (cartItems, items, pozycje itp.)
           const foundArray = Object.values(data).find(val => Array.isArray(val));
           if (foundArray) {
             rawItems = foundArray;
@@ -47,15 +46,13 @@ const Cart = () => {
         if (rawItems && rawItems.length > 0) {
           const mappedItems = rawItems.map((item) => {
             const productObj = item.product || item.produkt;
-
-            // Obsługa pól ceny (price / cena) i ilości (quantity / ilosc)
             const unitPrice = productObj?.price || productObj?.cena || 0;
             const itemQuantity = item.quantity || item.ilosc || 1;
             const productName = productObj?.name || productObj?.nazwa || "Produkt wędkarski";
             const productCategory = productObj?.category || productObj?.kategoria || "Sprzęt";
 
             return {
-              id: item.id, // ID pozycji (CartItem) potrzebne do usuwania
+              id: item.id,
               productId: productObj?.id,
               type: "product",
               name: productName,
@@ -64,7 +61,6 @@ const Cart = () => {
               quantity: itemQuantity
             };
           });
-
           setCartItems(mappedItems);
         } else {
           setCartItems([]);
@@ -74,16 +70,42 @@ const Cart = () => {
         console.error('Błąd parsowania koszyka:', err);
       })
       .finally(() => setLoading(false));
+
+          fetch(`http://localhost:8080/api/cart/${userId}/reservation`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Nie udało się pobrać danych koszyka z serwera.');
+        return res.json();
+      })
+      .then((data) => {
+                  if (data && data.fishingStand) {
+          setStandItem({
+            id: data.fishingStand.id,
+            name: data.fishingStand.name || `Stanowisko #${data.fishingStand.id}`,
+            reservationDate: data.reservationDate,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            price: 50.00 // Cena rezerwacji stanowiska wędkarskiego
+          });
+        } else {
+          setStandItem(null);
+        }
+      })
+      .catch((err) => {
+        console.error('Błąd parsowania koszyka:', err);
+      })
+      .finally(() => setLoading(false));
   };
+
+
 
   useEffect(() => {
     fetchCart();
   }, [userId]);
 
-  // Dynamiczne wyliczanie sumy koszyka
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
+  // Dynamiczne wyliczanie sumy koszyka (produkty + ewentualne stanowisko 50 PLN)
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0) + (standItem ? standItem.price : 0);
 
-  // 2. Usuwanie pojedynczego przedmiotu z koszyka
+  // Usuwanie pojedynczego przedmiotu z koszyka
   const handleRemoveItem = (cartItemId) => {
     if (!cartItemId) return;
 
@@ -92,95 +114,119 @@ const Cart = () => {
     })
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się usunąć produktu z koszyka.');
-
-        // Filtrujemy stan lokalny i powiadamiamy resztę aplikacji (np. licznik w nawigacji)
         setCartItems(prev => prev.filter((item) => item.id !== cartItemId));
         window.dispatchEvent(new Event('cartUpdated'));
       })
       .catch((err) => alert(err.message));
   };
 
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
+  // Usuwanie rezerwacji stanowiska z koszyka
+  const handleRemoveStand = () => {
     if (!userId || userId === "null") return;
 
-    setIsSubmitting(true);
-
-    // 1. Przygotowanie głównego obiektu zamówienia (nagłówka)
-    const orderDto = {
-      user: { id: parseInt(userId) },
-      totalAmount: totalAmount,
-      status: "NOWE",
-      orderDate: new Date().toISOString()
-    };
-
-    // 2. Wysłanie żądania utworzenia zamówienia
-    fetch(`http://localhost:8080/api/orders/create`, {
-      method: 'POST',
+    // Wysyłamy pusty obiekt rezerwacji do Twojego zaimplementowanego endpointu, aby go wyczyścić
+    fetch(`http://localhost:8080/api/cart/${userId}/reservation`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json;charset=UTF-8'
       },
-      body: JSON.stringify(orderDto)
+      body: JSON.stringify({
+        fishingStand: null,
+        reservationDate: null,
+        startTime: null,
+        endTime: null
+      })
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || 'Wystąpił błąd podczas tworzenia nagłówka zamówienia.');
-        }
-        return res.json(); // Zwraca utworzony obiekt Order z wygenerowanym ID z bazy danych
+      .then((res) => {
+        if (!res.ok) throw new Error('Nie udało się anulować rezerwacji stanowiska.');
+        setStandItem(null);
+        window.dispatchEvent(new Event('cartUpdated'));
       })
-      .then((createdOrder) => {
-        console.log("Zamówienie utworzone pomyślnie. ID:", createdOrder.id);
-
-        // 3. Tworzenie obiektów OrderItem dla każdego elementu w koszyku
-        // Używamy Promise.all, aby wysłać wszystkie zapytania równolegle
-        const orderItemPromises = cartItems.map((item) => {
-          const orderItemDto = {
-            order: { id: createdOrder.id },       // Powiązanie z nowo utworzonym zamówieniem
-            product: { id: item.productId },     // Powiązanie z zakupionym produktem
-            quantity: item.quantity,             // Ilość z koszyka (CartItem)
-            purchasePrice: item.price / item.quantity // Obliczenie ceny jednostkowej w momencie zakupu
-          };
-
-          // Wysyłamy POST na endpoint obsługujący zapis encji OrderItem
-          return fetch(`http://localhost:8080/api/orders/items`, { // <--- Poprawiona ścieżka
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json;charset=UTF-8'
-            },
-            body: JSON.stringify(orderItemDto)
-          }).then((itemRes) => {
-            if (!itemRes.ok) {
-              console.error(`Nie udało się dodać produktu o ID ${item.productId} do zamówienia.`);
-            }
-            return itemRes.json();
-          });
-        });
-
-        return Promise.all(orderItemPromises);
-      })
-      .then(() => {
-        console.log("Wszystkie pozycje zamówienia (OrderItem) zostały poprawnie utworzone.");
-
-        // 4. Czyszczenie koszyka w bazie danych (Twoja dotychczasowa logika)
-        return fetch(`http://localhost:8080/api/cart/${userId}/clear`, {
-          method: 'DELETE'
-        });
-      })
-      .then(() => {
-        // 5. Aktualizacja stanów wizualnych w aplikacji
-        setStep(3); // Ekran sukcesu
-        setCartItems([]); // Czyszczenie lokalnego stanu koszyka
-        window.dispatchEvent(new Event('cartUpdated')); // Odświeżenie licznika w Navbarze
-      })
-      .catch((err) => {
-        console.error("Błąd podczas pełnego procesu składania zamówienia:", err);
-        alert(`Błąd składania zamówienia: ${err.message}`);
-      })
-      .finally(() => setIsSubmitting(false));
+      .catch((err) => alert(err.message));
   };
 
-  // Widok dla niezalogowanego użytkownika
+const handlePlaceOrder = (e) => {
+  e.preventDefault();
+  if (!userId || userId === "null") return;
+
+  setIsSubmitting(true);
+
+  const orderDateIso = new Date().toISOString();
+
+  // Budujemy DTO zamówienia. Wyciągamy daty bezpośrednio ze stanu standItem (pochodzącego z koszyka)
+  const orderDto = {
+    user: { id: parseInt(userId) },
+    totalAmount: totalAmount,
+    status: "NOWE",
+    orderDate: orderDateIso,
+    
+    // Mapowanie relacji stanowiska
+    fishingStand: standItem ? { id: standItem.id } : null,
+    
+    // Kluczowa poprawka: Przekazujemy parametry rezerwacji na głównym poziomie zamówienia
+    reservationDate: standItem?.reservationDate || null,
+    startTime: standItem?.startTime || null,
+    endTime: standItem?.endTime || null
+  };
+
+  console.log("Wysyłane DTO zamówienia do API:", orderDto);
+
+  fetch(`http://localhost:8080/api/orders/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    body: JSON.stringify(orderDto)
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Wystąpił błąd podczas tworzenia zamówienia.');
+      }
+      return res.json();
+    })
+    .then((createdOrder) => {
+      // Jeśli w koszyku są produkty, dodajemy je jako OrderItems
+      if (cartItems.length === 0) return createdOrder;
+
+      const orderItemPromises = cartItems.map((item) => {
+        const orderItemDto = {
+          order: { id: createdOrder.id },
+          product: { id: item.productId },
+          quantity: item.quantity,
+          purchasePrice: item.price / item.quantity
+        };
+
+        return fetch(`http://localhost:8080/api/orders/items`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+          body: JSON.stringify(orderItemDto)
+        }).then((itemRes) => itemRes.json());
+      });
+
+      return Promise.all(orderItemPromises);
+    })
+    .then(() => {
+      // Czyszczenie koszyka po udanym zakupie
+      return fetch(`http://localhost:8080/api/cart/${userId}/clear`, {
+        method: 'DELETE'
+      });
+    })
+    .then(() => {
+      setStep(3); // Ekran sukcesu
+      setCartItems([]);
+      setStandItem(null);
+      window.dispatchEvent(new Event('cartUpdated'));
+    })
+    .catch((err) => {
+      console.error("Błąd składania zamówienia:", err);
+      alert(`Błąd: ${err.message}`);
+    })
+    .finally(() => setIsSubmitting(false));
+};
+
   if (!userId || userId === "null") {
     return (
       <div className="bg-slate-50 min-h-screen py-24 flex flex-col items-center justify-center text-center px-4">
@@ -196,7 +242,6 @@ const Cart = () => {
     );
   }
 
-  // Ekran ładowania danych
   if (loading) {
     return (
       <div className="bg-slate-50 min-h-screen flex flex-col items-center justify-center text-slate-500">
@@ -230,30 +275,60 @@ const Cart = () => {
         {step === 1 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {cartItems.length === 0 ? (
+              {cartItems.length === 0 && !standItem ? (
                 <div className="bg-white p-12 rounded-3xl border border-slate-100 shadow-sm text-center">
                   <p className="text-slate-400 font-medium text-lg">Twój koszyk jest pusty.</p>
-                  <Link to="/sklep" className="text-blue-600 font-bold mt-2 inline-block hover:underline">Dodaj produkty ze sklepu &rarr;</Link>
+                  <Link to="/sklep" className="text-blue-600 font-bold mt-2 inline-block hover:underline">Dodaj produkty lub zarezerwuj stanowisko &rarr;</Link>
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div key={item.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center gap-4">
-                    <div className="space-y-1">
-                      <span className="text-xs font-bold text-blue-500 uppercase tracking-wider">Sprzęt wędkarski</span>
-                      <h3 className="font-black text-slate-800 text-lg leading-snug">{item.name}</h3>
-                      <p className="text-sm text-slate-400 font-medium">{item.details}</p>
+                <>
+                  {/* Wyświetlanie rezerwacji stanowiska jeśli istnieje */}
+                  {standItem && (
+                    <div className="bg-amber-50/40 p-6 rounded-2xl border border-amber-100 shadow-sm flex justify-between items-center gap-4 border-l-4 border-l-amber-500">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-amber-100 text-amber-600 rounded-xl mt-1">
+                          <MapPin size={24} />
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Rezerwacja Łowiska</span>
+                          <h3 className="font-black text-slate-800 text-lg leading-snug">{standItem.name}</h3>
+                          <p className="text-sm text-slate-500 font-medium">
+                            Data: <span className="text-slate-800 font-bold">{standItem.reservationDate}</span> | Godziny: <span className="text-slate-800 font-bold">{standItem.startTime} - {standItem.endTime}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <span className="font-black text-slate-900 text-xl whitespace-nowrap">{standItem.price.toFixed(2)} zł</span>
+                        <button
+                          onClick={handleRemoveStand}
+                          className="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <span className="font-black text-slate-900 text-xl whitespace-nowrap">{Number(item.price).toFixed(2)} zł</span>
-                      <button
-                        onClick={() => handleRemoveItem(item.id)}
-                        className="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                  )}
+
+                  {/* Wyświetlanie produktów */}
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center gap-4">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-blue-500 uppercase tracking-wider">Sprzęt wędkarski</span>
+                        <h3 className="font-black text-slate-800 text-lg leading-snug">{item.name}</h3>
+                        <p className="text-sm text-slate-400 font-medium">{item.details}</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <span className="font-black text-slate-900 text-xl whitespace-nowrap">{Number(item.price).toFixed(2)} zł</span>
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </>
               )}
             </div>
 
@@ -261,21 +336,32 @@ const Cart = () => {
             <div className="lg:col-span-1">
               <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 sticky top-28">
                 <h3 className="text-xl font-black text-slate-900 border-b border-slate-100 pb-4">Podsumowanie</h3>
-                <div className="flex justify-between font-medium text-slate-500">
-                  <span>Wartość zamówienia:</span>
-                  <span className="text-slate-800 font-bold">{totalAmount.toFixed(2)} zł</span>
+                
+                {/* Rozbicie podsumowania */}
+                <div className="space-y-2">
+                  <div className="flex justify-between font-medium text-slate-500 text-sm">
+                    <span>Produkty:</span>
+                    <span className="text-slate-700 font-bold">{(totalAmount - (standItem ? standItem.price : 0)).toFixed(2)} zł</span>
+                  </div>
+                  {standItem && (
+                    <div className="flex justify-between font-medium text-slate-500 text-sm">
+                      <span>Rezerwacja stanowiska:</span>
+                      <span className="text-amber-600 font-bold">{standItem.price.toFixed(2)} zł</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-medium text-slate-500 text-sm">
+                    <span>Wysyłka:</span>
+                    <span className="text-emerald-600 font-bold">Gratis</span>
+                  </div>
                 </div>
-                <div className="flex justify-between font-medium text-slate-500">
-                  <span>Wysyłka:</span>
-                  <span className="text-emerald-600 font-bold">Gratis</span>
-                </div>
+
                 <div className="border-t border-slate-100 pt-4 flex justify-between items-end">
                   <span className="font-bold text-slate-800">Do zapłaty:</span>
                   <span className="text-3xl font-black text-blue-600">{totalAmount.toFixed(2)} zł</span>
                 </div>
                 <button
                   onClick={() => setStep(2)}
-                  disabled={cartItems.length === 0}
+                  disabled={cartItems.length === 0 && !standItem}
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white p-4 rounded-2xl font-bold text-lg transition-all hover:shadow-lg"
                 >
                   Przejdź do kasy <ArrowRight size={20} />

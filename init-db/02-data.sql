@@ -15,15 +15,11 @@ INSERT INTO ryba (id, nazwa, ryba_url) VALUES
 (5, 'Sum', 'icons/catfish.svg'),
 (6, 'Pstrąg', 'icons/trout.svg');
 
+
 INSERT INTO lowisko_ryba (lowisko_id, ryba_id) VALUES
 (1, 1), (1, 2), (1, 4), -- Zegrze: Karp, Szczupak, Okoń
 (2, 1), (2, 3),         -- Stawy: Karp, Amur
 (3, 5), (3, 6);         -- Brda: Sum, Pstrąg
-
-INSERT INTO stanowisko (lowisko_id, numer_stanowiska, czy_dostepne) VALUES
-(1, 'Z-01', true), (1, 'Z-02', false), (1, 'Z-03', true),
-(2, 'S-1', true), (2, 'S-2', true),
-(3, 'BRD-X', true);
 
 INSERT INTO produkt (id, nazwa, opis, cena, stan_magazynowy, kategoria, produkt_url) VALUES
 (1, 'Wędka Karpiowa 3.6m', 'Solidna wędka do połowu dużych okazów.', 249.99, 12, 'Wędki', 'products/rod_1.jpg'),
@@ -39,10 +35,6 @@ INSERT INTO produkt_ryba (produkt_id, ryba_id) VALUES
 
 INSERT INTO koszyk (uzytkownik_id) VALUES (2), (3);
 
-INSERT INTO zawartosc_koszyka (koszyk_id, produkt_id, ilosc) VALUES
-(1, 1, 1), -- 1x wędka
-(1, 3, 2); -- 2x zanęta
-
 INSERT INTO zamowienie (id, uzytkownik_id, stanowisko_id, status, suma_zamowienia) VALUES
 (1, 3, 4, 'ZREALIZOWANE', 105.49); -- Kupił coś i zarezerwował stanowisko S-1 (id 4)
 
@@ -53,20 +45,19 @@ INSERT INTO zamowione_produkty (zamowienie_id, produkt_id, ilosc, cena_zakupu) V
 
 INSERT INTO lowisko (id, nazwa, opis, lowisko_url) VALUES 
 (1, 'Jezioro Ciche', 'Malowniczy akwen obfitujący w potężne karpie i amury.', '/lake-map.jpg'),
-(2, 'Staw Ósemka (Mały)', 'Idealne miejsce dla miłośników szybkich wypadów na drapieżniki.', '/lake-map-2.jpg'),
-ON DUPLICATE KEY UPDATE id=id;
+(2, 'Staw Ósemka (Mały)', 'Idealne miejsce dla miłośników szybkich wypadów na drapieżniki.', '/lake-map-2.jpg');
 
-INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska) VALUES 
-(1, 1, '1'),
-(2, 1, '2'),
-(3, 1, '3'),
-(4, 1, '4'),
-(5, 1, '5');
+INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska, czy_dostepne) VALUES 
+(1, 1, '1', 1),
+(2, 1, '2', 1),
+(3, 1, '3', 0),
+(4, 1, '4', 1),
+(5, 1, '5', 1);
 
 -- Stanowiska dla łowiska o id = 2 (Staw Ósemka)
-INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska) VALUES 
-(6, 2, '1'),
-(7, 2, '2'),
-(8, 2, '3');
+INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska, czy_dostepne) VALUES 
+(6, 2, '1', 1),
+(7, 2, '2', 1),
+(8, 2, '3', 0);
 
 SET FOREIGN_KEY_CHECKS = 1;
