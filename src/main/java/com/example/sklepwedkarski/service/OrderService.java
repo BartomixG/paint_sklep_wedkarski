@@ -1,16 +1,17 @@
 package com.example.sklepwedkarski.service;
 
-import com.example.sklepwedkarski.entity.Order;
-import com.example.sklepwedkarski.entity.OrderItem;
-import com.example.sklepwedkarski.repository.OrderItemRepository;
-import com.example.sklepwedkarski.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.sklepwedkarski.entity.Order;
+import com.example.sklepwedkarski.entity.OrderItem;
+import com.example.sklepwedkarski.repository.OrderItemRepository;
+import com.example.sklepwedkarski.repository.OrderRepository;
 
 @Service
 public class OrderService {
@@ -20,6 +21,11 @@ public class OrderService {
 
     @Autowired
     private OrderItemRepository orderItemRepository;
+
+
+    public OrderItem createOrderItem(OrderItem orderItem) {
+        return orderItemRepository.save(orderItem);
+    }
 
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();

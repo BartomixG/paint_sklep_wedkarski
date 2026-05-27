@@ -1,10 +1,11 @@
 package com.example.sklepwedkarski.repository;
 
-import com.example.sklepwedkarski.entity.Fishery;
-import com.example.sklepwedkarski.entity.FishingStand;
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.List;
+import com.example.sklepwedkarski.entity.Fishery;
+import com.example.sklepwedkarski.entity.FishingStand;
 
 public interface FishingStandRepository extends CrudRepository<FishingStand, Integer> {
     List<FishingStand> findByFishery(Fishery fishery);

@@ -56,6 +56,13 @@ public class OrderController {
         
     }
 
+    @PostMapping("/items")
+    public ResponseEntity<OrderItem> createOrderItem(@RequestBody OrderItem orderItem) {
+        // Opcja A: Jeśli masz metodę zapisu w OrderService (zalecane):
+        OrderItem savedItem = orderService.createOrderItem(orderItem);
+        return ResponseEntity.ok(savedItem);
+    }
+
     // ADMIN
     @PutMapping("/{id}/status")
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Integer id, @RequestParam String status) {

@@ -12,7 +12,10 @@ const Profile = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [error, setError] = useState(null);
 
-  const [reservations] = useState([]);
+  const [reservations] = useState([
+    { id: "RES-1029", lake: "Jezioro Ciche (Główne)", spot: "Stanowisko 1 (Karp)", date: "2026-05-20", time: "06:00 - 18:00", status: "Aktywna", price: 120.00 },
+    { id: "RES-0982", lake: "Staw Ósemka (Mały)", spot: "Stanowisko 4 (Karp)", date: "2026-04-15", time: "Cały dzień", status: "Zakończona", price: 90.00 },
+  ]);
 
   useEffect(() => {
     if (!userId) {
@@ -116,7 +119,9 @@ const Profile = () => {
               <div><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status konta</span><p className="text-emerald-600 font-bold mt-0.5 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Zweryfikowane</p></div>
             </div>
             <div className="mt-6 space-y-3">
-              <a href="/profil/edycja" ><button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-sm"><Edit3 size={16} /> Edytuj profil</button></a>
+              <form action="/profil/edycja">
+              <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-sm"><Edit3 size={16} /> Edytuj profil</button>
+              </form>
               <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 py-3.5 rounded-xl font-bold text-sm"><LogOut size={16} /> Wyloguj się</button>
             </div>
           </div>

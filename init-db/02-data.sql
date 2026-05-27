@@ -15,11 +15,6 @@ INSERT INTO ryba (id, nazwa, ryba_url) VALUES
 (5, 'Sum', 'icons/catfish.svg'),
 (6, 'Pstrąg', 'icons/trout.svg');
 
-INSERT INTO lowisko (id, nazwa, opis, lowisko_url) VALUES
-(1, 'Jezioro Zegrzyńskie', 'Duży zbiornik z bogatą fauną, idealny na weekend.', 'images/zegrze.jpg'),
-(2, 'Stawy w Zgierzu', 'Prywatne łowisko komercyjne, cisza i spokój.', 'images/stawy.jpg'),
-(3, 'Rzeka Brda', 'Dzika rzeka dla wymagających wędkarzy.', 'images/brda.jpg');
-
 INSERT INTO lowisko_ryba (lowisko_id, ryba_id) VALUES
 (1, 1), (1, 2), (1, 4), -- Zegrze: Karp, Szczupak, Okoń
 (2, 1), (2, 3),         -- Stawy: Karp, Amur
@@ -54,5 +49,24 @@ INSERT INTO zamowienie (id, uzytkownik_id, stanowisko_id, status, suma_zamowieni
 INSERT INTO zamowione_produkty (zamowienie_id, produkt_id, ilosc, cena_zakupu) VALUES
 (1, 2, 1, 95.50), -- Kołowrotek (cena mogła być inna niż obecnie)
 (1, 5, 1, 9.99);  -- Haczyki
+
+
+INSERT INTO lowisko (id, nazwa, opis, lowisko_url) VALUES 
+(1, 'Jezioro Ciche', 'Malowniczy akwen obfitujący w potężne karpie i amury.', '/lake-map.jpg'),
+(2, 'Staw Ósemka (Mały)', 'Idealne miejsce dla miłośników szybkich wypadów na drapieżniki.', '/lake-map-2.jpg'),
+ON DUPLICATE KEY UPDATE id=id;
+
+INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska) VALUES 
+(1, 1, '1'),
+(2, 1, '2'),
+(3, 1, '3'),
+(4, 1, '4'),
+(5, 1, '5');
+
+-- Stanowiska dla łowiska o id = 2 (Staw Ósemka)
+INSERT INTO stanowisko (id, lowisko_id, numer_stanowiska) VALUES 
+(6, 2, '1'),
+(7, 2, '2'),
+(8, 2, '3');
 
 SET FOREIGN_KEY_CHECKS = 1;

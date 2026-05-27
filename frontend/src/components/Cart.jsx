@@ -29,7 +29,7 @@ const Cart = () => {
       .then((data) => {
         // Automatyczne wykrywanie tablicy z produktami w JSONIE
         let rawItems = [];
-        
+
         if (Array.isArray(data)) {
           rawItems = data; // Jeśli API zwróciło bezpośrednio tablicę
         } else if (data && typeof data === 'object') {
@@ -47,7 +47,7 @@ const Cart = () => {
         if (rawItems && rawItems.length > 0) {
           const mappedItems = rawItems.map((item) => {
             const productObj = item.product || item.produkt;
-            
+
             // Obsługa pól ceny (price / cena) i ilości (quantity / ilosc)
             const unitPrice = productObj?.price || productObj?.cena || 0;
             const itemQuantity = item.quantity || item.ilosc || 1;
@@ -92,7 +92,7 @@ const Cart = () => {
     })
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się usunąć produktu z koszyka.');
-        
+
         // Filtrujemy stan lokalny i powiadamiamy resztę aplikacji (np. licznik w nawigacji)
         setCartItems(prev => prev.filter((item) => item.id !== cartItemId));
         window.dispatchEvent(new Event('cartUpdated'));
@@ -100,57 +100,81 @@ const Cart = () => {
       .catch((err) => alert(err.message));
   };
 
-const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = (e) => {
     e.preventDefault();
     if (!userId || userId === "null") return;
 
     setIsSubmitting(true);
 
-    // 1. Mapujemy produkty z koszyka na strukturę pozycji zamówienia akceptowaną przez backend
-    const orderItemsDto = cartItems.map((item) => ({
-      product: { id: item.productId }, // Przekazujemy ID produktu dla relacji JPA
-      quantity: item.quantity,         // Ilość zakupionych sztuk
-      purchasePrice: item.price / item.quantity // Cena jednostkowa w momencie zakupu
-    }));
-
-    // 2. Budujemy pełny obiekt zamówienia odpowiadający encji Order.java wraz z listą items
+    // 1. Przygotowanie głównego obiektu zamówienia (nagłówka)
     const orderDto = {
-      user: { id: parseInt(userId) },     // Przekazujemy relację użytkownika przez jego ID
-      totalAmount: totalAmount,           // Łączna kwota zamówienia
-      status: "NOWE",                     // Domyślny status nowego zamówienia
-      orderDate: new Date().toISOString(), // Bieżąca data i godzina
-      items: orderItemsDto                // Dodana lista produktów (Spring zmapuje to na OrderItem)
+      user: { id: parseInt(userId) },
+      totalAmount: totalAmount,
+      status: "NOWE",
+      orderDate: new Date().toISOString()
     };
 
+    // 2. Wysłanie żądania utworzenia zamówienia
     fetch(`http://localhost:8080/api/orders/create`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json;charset=UTF-8' 
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
       },
-      body: JSON.stringify(orderDto) // Konwersja pełnego obiektu JS wraz z pozycjami na JSON
+      body: JSON.stringify(orderDto)
     })
       .then(async (res) => {
         if (!res.ok) {
           const errorText = await res.text();
-          throw new Error(errorText || 'Wystąpił błąd podczas rejestracji zamówienia na serwerze.');
+          throw new Error(errorText || 'Wystąpił błąd podczas tworzenia nagłówka zamówienia.');
         }
-        return res.json();
+        return res.json(); // Zwraca utworzony obiekt Order z wygenerowanym ID z bazy danych
       })
-      .then((data) => {
-        console.log("Zamówienie utworzone, teraz czyszczę koszyk w bazie...");
-        
-        // Czyszczenie koszyka w bazie danych po sukcesie zamówienia
+      .then((createdOrder) => {
+        console.log("Zamówienie utworzone pomyślnie. ID:", createdOrder.id);
+
+        // 3. Tworzenie obiektów OrderItem dla każdego elementu w koszyku
+        // Używamy Promise.all, aby wysłać wszystkie zapytania równolegle
+        const orderItemPromises = cartItems.map((item) => {
+          const orderItemDto = {
+            order: { id: createdOrder.id },       // Powiązanie z nowo utworzonym zamówieniem
+            product: { id: item.productId },     // Powiązanie z zakupionym produktem
+            quantity: item.quantity,             // Ilość z koszyka (CartItem)
+            purchasePrice: item.price / item.quantity // Obliczenie ceny jednostkowej w momencie zakupu
+          };
+
+          // Wysyłamy POST na endpoint obsługujący zapis encji OrderItem
+          return fetch(`http://localhost:8080/api/orders/items`, { // <--- Poprawiona ścieżka
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json;charset=UTF-8'
+            },
+            body: JSON.stringify(orderItemDto)
+          }).then((itemRes) => {
+            if (!itemRes.ok) {
+              console.error(`Nie udało się dodać produktu o ID ${item.productId} do zamówienia.`);
+            }
+            return itemRes.json();
+          });
+        });
+
+        return Promise.all(orderItemPromises);
+      })
+      .then(() => {
+        console.log("Wszystkie pozycje zamówienia (OrderItem) zostały poprawnie utworzone.");
+
+        // 4. Czyszczenie koszyka w bazie danych (Twoja dotychczasowa logika)
         return fetch(`http://localhost:8080/api/cart/${userId}/clear`, {
           method: 'DELETE'
         });
       })
       .then(() => {
-        setStep(3); // Przejście do ekranu sukcesu
-        setCartItems([]); // Czyszczenie koszyka w widoku
-        window.dispatchEvent(new Event('cartUpdated')); // Aktualizacja licznika w aplikacji
+        // 5. Aktualizacja stanów wizualnych w aplikacji
+        setStep(3); // Ekran sukcesu
+        setCartItems([]); // Czyszczenie lokalnego stanu koszyka
+        window.dispatchEvent(new Event('cartUpdated')); // Odświeżenie licznika w Navbarze
       })
       .catch((err) => {
-        console.error("Błąd tworzenia zamówienia:", err);
+        console.error("Błąd podczas pełnego procesu składania zamówienia:", err);
         alert(`Błąd składania zamówienia: ${err.message}`);
       })
       .finally(() => setIsSubmitting(false));
@@ -185,14 +209,14 @@ const handlePlaceOrder = (e) => {
   return (
     <div className="bg-slate-50 min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-5xl">
-        
+
         {/* Nagłówek i Status Kroków */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Twój Koszyk</h1>
             <p className="text-slate-500 mt-1">Dokończ składanie zamówienia</p>
           </div>
-          
+
           {step < 3 && (
             <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm font-bold text-sm text-slate-400">
               <span className={`px-4 py-2 rounded-xl transition-all ${step === 1 ? 'bg-blue-600 text-white' : 'text-slate-700 bg-slate-50'}`}>1. Przegląd</span>
@@ -221,7 +245,7 @@ const handlePlaceOrder = (e) => {
                     </div>
                     <div className="flex items-center gap-6">
                       <span className="font-black text-slate-900 text-xl whitespace-nowrap">{Number(item.price).toFixed(2)} zł</span>
-                      <button 
+                      <button
                         onClick={() => handleRemoveItem(item.id)}
                         className="text-slate-300 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
                       >
@@ -249,7 +273,7 @@ const handlePlaceOrder = (e) => {
                   <span className="font-bold text-slate-800">Do zapłaty:</span>
                   <span className="text-3xl font-black text-blue-600">{totalAmount.toFixed(2)} zł</span>
                 </div>
-                <button 
+                <button
                   onClick={() => setStep(2)}
                   disabled={cartItems.length === 0}
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white p-4 rounded-2xl font-bold text-lg transition-all hover:shadow-lg"
@@ -265,7 +289,7 @@ const handlePlaceOrder = (e) => {
         {step === 2 && (
           <form onSubmit={handlePlaceOrder} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm max-w-2xl mx-auto">
             <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">Wybierz formę płatności</h3>
-            
+
             <div className="space-y-3 mb-8">
               <label className={`flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'blik' ? 'border-blue-600 bg-blue-50/30' : 'border-slate-100 hover:bg-slate-50'}`}>
                 <div className="flex items-center gap-4">
@@ -305,14 +329,14 @@ const handlePlaceOrder = (e) => {
               <button type="button" onClick={() => setStep(1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold transition-colors">
                 <ArrowLeft size={18} /> Powrót do podsumowania
               </button>
-              
+
               <div className="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
                 <div className="text-center sm:text-right">
                   <span className="text-sm text-slate-400 block font-medium">Kwota końcowa:</span>
                   <span className="text-2xl font-black text-blue-600">{totalAmount.toFixed(2)} zł</span>
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSubmitting}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all disabled:opacity-50 shadow-md"
                 >
