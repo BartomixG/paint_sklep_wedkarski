@@ -1,9 +1,16 @@
 package com.example.sklepwedkarski.entity;
 
-import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "zamowienie")
@@ -12,8 +19,12 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+@ManyToOne
     @JoinColumn(name = "uzytkownik_id")
+    @com.fasterxml.jackson.annotation.JsonIdentityInfo(
+        generator = com.fasterxml.jackson.annotation.ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+    )
     private User user;
 
     @ManyToOne

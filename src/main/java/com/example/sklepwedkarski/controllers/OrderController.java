@@ -1,17 +1,27 @@
 package com.example.sklepwedkarski.controllers;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.sklepwedkarski.entity.Order;
 import com.example.sklepwedkarski.entity.OrderItem;
 import com.example.sklepwedkarski.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
+@RequestMapping(value = "/api/orders", produces = "application/json;charset=UTF-8")
+@CrossOrigin(origins = "http://localhost:5173")
 public class OrderController {
 
     @Autowired
@@ -40,9 +50,10 @@ public class OrderController {
     }
 
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         return ResponseEntity.ok(orderService.createOrder(order));
+        
     }
 
     // ADMIN
