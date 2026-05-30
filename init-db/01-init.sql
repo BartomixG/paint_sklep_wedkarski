@@ -42,7 +42,7 @@ CREATE TABLE lowisko (
 CREATE TABLE stanowisko (
     id INT AUTO_INCREMENT PRIMARY KEY,
     lowisko_id INT NOT NULL,
-    numer_stanowiska VARCHAR(10) NOT NULL,
+    numer_stanowiska VARCHAR(30) NOT NULL,
     czy_dostepne BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (lowisko_id) REFERENCES lowisko(id) ON DELETE CASCADE
 );
