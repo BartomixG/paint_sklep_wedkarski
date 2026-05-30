@@ -134,7 +134,7 @@ INSERT INTO produkt (id, nazwa, opis, cena, stan_magazynowy, kategoria, produkt_
 (27, 'Mepps Aglia Silver #3', 'Najbardziej klasyczna obrotówka świata. Uniwersalna na każdą rybę.', 14.20, 100, 'Przynęty', 'images/products/baits/mepps_aglia.jpg'),
 (28, 'Mepps Black Fury #2', 'Błystka z czarną paletką w żółte kropki. Genialna na pstrągi i okonie w słoneczne dni.', 15.50, 80, 'Przynęty', 'images/products/baits/mepps_black_fury.jpg'),
 (29, 'Blue Fox Super Vibrax #4', 'Ciężka obrotówka z korpusem zapobiegającym skręcaniu linki. Świetna na szczupaki.', 19.00, 45, 'Przynęty', 'images/products/baits/blue_fox_vibrax.jpg'),
-(30, 'SpinMad Mag 6g', 'Mały, ale ciężki jig spinner (wirujący ogonek). Król polowania na okonie.', 18.50, 120, 'Przynęty', 'images/products/baits/spinmad_mag.jpg'),
+(30, 'SpinMad Mag 6g', 'Mały, ale wariat. Jig spinner, król polowania na okonie.', 18.50, 120, 'Przynęty', 'images/products/baits/spinmad_mag.jpg'),
 
 -- ŻYŁKI I PLECIONKI
 (31, 'Shimano Kairiki 8 Mantis Green', '8-splotowa plecionka, niezwykle gładka i cicha na przelotkach. 150m.', 79.00, 25, 'Linki', 'images/products/lines/shimano_kairiki.jpg'),
