@@ -20,6 +20,10 @@ public class FisheryService {
     @Autowired
     private FishingStandRepository fishingStandRepository;
 
+    public List<Fishery> getFisheriesByFish(String fishName) {
+        return fisheryRepository.findByFishName(fishName);
+    }
+
     public List<Fishery> getAllFisheries() {
         List<Fishery> fisheries = new ArrayList<>();
         fisheryRepository.findAll().forEach(fisheries::add);

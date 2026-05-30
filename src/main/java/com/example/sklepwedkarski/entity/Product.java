@@ -3,6 +3,8 @@ package com.example.sklepwedkarski.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "produkt")
@@ -29,7 +31,23 @@ public class Product {
     @Column(name = "produkt_url")
     private String productUrl;
 
+    @ManyToMany
+    @JoinTable(
+            name = "produkt_ryba",
+            joinColumns = @JoinColumn(name = "produkt_id"),
+            inverseJoinColumns = @JoinColumn(name = "ryba_id")
+    )
+    private List<Fish> fish = new ArrayList<>();
+
     public Product() {
+    }
+
+    public List<Fish> getFish() {
+        return fish;
+    }
+
+    public void setFish(List<Fish> fish) {
+        this.fish = fish;
     }
 
     public Integer getId() {

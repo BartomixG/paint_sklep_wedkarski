@@ -67,6 +67,11 @@ public class ProductController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/lowisko/{fisheryId}")
+    public List<Product> getProductsByFishery(@PathVariable Integer fisheryId) {
+        return productService.getProductsByFishery(fisheryId);
+    }
 }
 
 

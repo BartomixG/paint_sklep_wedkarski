@@ -1,6 +1,10 @@
 package com.example.sklepwedkarski.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ryba")
@@ -15,12 +19,24 @@ public class Fish {
     @Column(name = "ryba_url")
     private String fishUrl;
 
+    @ManyToMany(mappedBy = "fish")
+    @JsonBackReference
+    private List<Fishery> fisheries = new ArrayList<>();
+
     public Fish() {
     }
 
     public Fish(String name, String fishUrl) {
         this.name = name;
         this.fishUrl = fishUrl;
+    }
+
+    public List<Fishery> getFisheries() {
+        return fisheries;
+    }
+
+    public void setFisheries(List<Fishery> fisheries) {
+        this.fisheries = fisheries;
     }
 
     public Integer getId() {

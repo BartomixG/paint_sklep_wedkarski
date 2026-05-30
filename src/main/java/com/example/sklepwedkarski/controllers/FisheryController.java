@@ -39,4 +39,9 @@ public class FisheryController {
     public ResponseEntity<Fishery> addFishery(@RequestBody Fishery fishery) {
         return ResponseEntity.ok(fisheryService.addFishery(fishery));
     }
+
+    @GetMapping("/ryba/{fishName}")
+    public List<Fishery> getFisheriesByFish(@PathVariable String fishName) {
+        return fisheryService.getFisheriesByFish(fishName);
+    }
 }

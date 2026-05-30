@@ -55,4 +55,8 @@ public class ProductService {
         }
         return false;
     }
+
+    public List<Product> getProductsByFishery(Integer fisheryId) {
+        return productRepository.findByFisheryId(fisheryId);
+    }
 }

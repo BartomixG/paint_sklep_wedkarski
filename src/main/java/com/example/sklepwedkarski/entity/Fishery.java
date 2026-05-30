@@ -1,11 +1,10 @@
 package com.example.sklepwedkarski.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "lowisko")
@@ -23,6 +22,15 @@ public class Fishery {
     @Column(name = "lowisko_url")
     private String fisheryUrl;
 
+    @ManyToMany
+    @JsonManagedReference
+    @JoinTable(
+            name = "lowisko_ryba",
+            joinColumns = @JoinColumn(name = "lowisko_id"),
+            inverseJoinColumns = @JoinColumn(name = "ryba_id")
+    )
+    private List<Fish> fish = new ArrayList<>();
+
     public Fishery() {
     }
 
@@ -30,6 +38,14 @@ public class Fishery {
         this.name = name;
         this.description = description;
         this.fisheryUrl = fisheryUrl;
+    }
+
+    public List<Fish> getFish() {
+        return fish;
+    }
+
+    public void setFish(List<Fish> fish) {
+        this.fish = fish;
     }
 
     public Integer getId() {
