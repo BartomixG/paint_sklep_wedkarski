@@ -15,7 +15,7 @@ const Auth = () => {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
-  // Logika logowania
+    // Logika logowania
   const handleLogin = (e) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
@@ -23,7 +23,7 @@ const Auth = () => {
       return;
     }
 
-    fetch('/api/users/login', {
+    fetch('api/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: loginEmail, password: loginPassword })
