@@ -14,7 +14,7 @@ const Navbar = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/cart/${userId}`)
+    fetch(`/api/cart/${userId}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((cartArray) => {
         // Ponieważ backend zwraca bezpośrednio tablicę, sprawdzamy Array.isArray

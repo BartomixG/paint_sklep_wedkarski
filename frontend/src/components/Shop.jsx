@@ -13,7 +13,7 @@ const Shop = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch('http://localhost:8080/api/produkty')
+    fetch('/api/produkty')
       .then((response) => {
         if (!response.ok) throw new Error('Nie udało się pobrać produktów.');
         return response.json();
@@ -34,7 +34,7 @@ const Shop = () => {
       alert('Zaloguj się, aby dodać artykuł do koszyka.');
       return;
     }
-    fetch(`http://localhost:8080/api/cart/${userId}/add?productId=${productId}&quantity=1`, {
+    fetch(`/api/cart/${userId}/add?productId=${productId}&quantity=1`, {
       method: 'POST'
     })
       .then((res) => {

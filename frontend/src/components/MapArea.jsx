@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Calendar, CheckCircle, ChevronDown, Clock, ShoppingBag, X, Image as ImageIcon, DollarSign, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 // Stałe przedziały rezerwacji (pół dnia)
 const RESERVATION_SLOTS = [
@@ -195,7 +195,7 @@ const MapArea = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/api/cart/${userId}/reservation`, {
+      const response = await fetch(`/api/cart/${userId}/reservation`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'

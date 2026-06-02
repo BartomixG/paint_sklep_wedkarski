@@ -22,7 +22,7 @@ const Cart = () => {
     }
 
     setLoading(true);
-    fetch(`http://localhost:8080/api/cart/${userId}`)
+    fetch(`/api/cart/${userId}`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się pobrać danych koszyka z serwera.');
         return res.json();
@@ -71,7 +71,7 @@ const Cart = () => {
       })
       .finally(() => setLoading(false));
 
-          fetch(`http://localhost:8080/api/cart/${userId}/reservation`)
+          fetch(`/api/cart/${userId}/reservation`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się pobrać danych koszyka z serwera.');
         return res.json();
@@ -109,7 +109,7 @@ const Cart = () => {
   const handleRemoveItem = (cartItemId) => {
     if (!cartItemId) return;
 
-    fetch(`http://localhost:8080/api/cart/item/${cartItemId}`, {
+    fetch(`/api/cart/item/${cartItemId}`, {
       method: 'DELETE',
     })
       .then((res) => {
@@ -125,7 +125,7 @@ const Cart = () => {
     if (!userId || userId === "null") return;
 
     // Wysyłamy pusty obiekt rezerwacji do Twojego zaimplementowanego endpointu, aby go wyczyścić
-    fetch(`http://localhost:8080/api/cart/${userId}/reservation`, {
+    fetch(`/api/cart/${userId}/reservation`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json;charset=UTF-8'
@@ -171,7 +171,7 @@ const handlePlaceOrder = (e) => {
 
   console.log("Wysyłane DTO zamówienia do API:", orderDto);
 
-  fetch(`http://localhost:8080/api/orders/create`, {
+  fetch(`/api/orders/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
@@ -197,7 +197,7 @@ const handlePlaceOrder = (e) => {
           purchasePrice: item.price / item.quantity
         };
 
-        return fetch(`http://localhost:8080/api/orders/items`, {
+        return fetch(`/api/orders/items`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -210,7 +210,7 @@ const handlePlaceOrder = (e) => {
     })
     .then(() => {
       // Czyszczenie koszyka po udanym zakupie
-      return fetch(`http://localhost:8080/api/cart/${userId}/clear`, {
+      return fetch(`/api/cart/${userId}/clear`, {
         method: 'DELETE'
       });
     })

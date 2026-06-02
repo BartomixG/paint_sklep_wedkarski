@@ -12,7 +12,7 @@ const ProductDetail = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`http://localhost:8080/api/produkty/${id}`)
+    fetch(`/api/produkty/${id}`)
       .then((response) => {
         if (!response.ok) {
           if (response.status === 404) throw new Error('Nie znaleziono takiego produktu.');
@@ -39,7 +39,7 @@ const ProductDetail = () => {
 
   setIsAdding(true);
   // Kluczowe: wysyłamy poprawne zapytanie z parametrami productId oraz quantity
-  fetch(`http://localhost:8080/api/cart/${userId}/add?productId=${product.id}&quantity=1`, {
+  fetch(`/api/cart/${userId}/add?productId=${product.id}&quantity=1`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
