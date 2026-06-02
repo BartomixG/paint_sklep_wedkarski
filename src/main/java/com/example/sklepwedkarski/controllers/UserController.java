@@ -20,7 +20,7 @@ import com.example.sklepwedkarski.service.UserService;
 
 @RestController
 @RequestMapping(value = "/api/users", produces = "application/json;charset=UTF-8")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class UserController {
 
     @Autowired
