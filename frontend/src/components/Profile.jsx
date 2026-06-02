@@ -23,7 +23,7 @@ const Profile = () => {
     }
 
     // 1. Pobieranie danych profilu
-    fetch(`http://localhost:8080/api/users/${userId}`)
+    fetch(`/api/users/${userId}`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie znaleziono danych zalogowanego profilu.');
         return res.json();
@@ -38,7 +38,7 @@ const Profile = () => {
       });
 
     // 2. Pobieranie zamówień i ekstrakcja rezerwacji łowisk
-    fetch(`http://localhost:8080/api/users/${userId}/orders`)
+    fetch(`/api/users/${userId}/orders`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się pobrać historii zamówień.');
         return res.json();
@@ -48,7 +48,7 @@ const Profile = () => {
         const ordersWithItems = await Promise.all(
           ordersList.map(async (order) => {
             try {
-              const itemsResponse = await fetch(`http://localhost:8080/api/orders/${order.id}/items`);
+              const itemsResponse = await fetch(`/api/orders/${order.id}/items`);
               if (itemsResponse.ok) {
                 const itemsData = await itemsResponse.json();
                 return { ...order, items: itemsData };

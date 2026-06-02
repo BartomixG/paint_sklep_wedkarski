@@ -23,7 +23,7 @@ const Auth = () => {
       return;
     }
 
-    fetch('http://localhost:8080/api/users/login', {
+    fetch('/api/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: loginEmail, password: loginPassword })
@@ -57,7 +57,7 @@ const Auth = () => {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    fetch('http://localhost:8080/api/users/register', {
+    fetch('/api/users/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

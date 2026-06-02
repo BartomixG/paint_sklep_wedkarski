@@ -24,7 +24,7 @@ const EditProfile = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/users/${userId}`)
+    fetch(`/api/users/${userId}`)
       .then((res) => {
         if (!res.ok) throw new Error('Nie udało się wczytać danych profilu.');
         return res.json();
@@ -57,7 +57,7 @@ const EditProfile = () => {
       userRole
     };
 
-    fetch(`http://localhost:8080/api/users/${userId}`, {
+    fetch(`/api/users/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json;charset=UTF-8' // Kluczowe kodowanie UTF-8 dodane w Twoim UserController
