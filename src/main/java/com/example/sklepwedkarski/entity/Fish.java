@@ -1,10 +1,16 @@
 package com.example.sklepwedkarski.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "ryba")
@@ -20,8 +26,8 @@ public class Fish {
     private String fishUrl;
 
     @ManyToMany(mappedBy = "fish")
-    @JsonBackReference
-    private List<Fishery> fisheries = new ArrayList<>();
+    @JsonIgnoreProperties("fish") // <-- Tells Jackson to ignore the fish list inside Fishery when accessing via Fish
+    private List<Fishery> fisheries;   
 
     public Fish() {
     }

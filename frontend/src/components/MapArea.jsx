@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MapPin, Calendar, CheckCircle, ChevronDown, Clock, ShoppingBag, X, Image as ImageIcon, DollarSign, AlertTriangle } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, ChevronDown, Clock, ShoppingCart, X, Image as ImageIcon, DollarSign, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const API_BASE_URL = '/api';
@@ -10,35 +10,30 @@ const RESERVATION_SLOTS = [
   { id: 'NIGHT', name: 'Noc', time: '18:00 - 06:00', start: '18:00', end: '06:00', price: 50 }
 ];
 
-const MOCK_RECOMMENDATIONS = [
-  { id: 101, name: "Wędka Karpiowa Pro 360", price: "299.00", category: "Wędki" },
-  { id: 102, name: "Zestaw Spławików (5 szt.)", price: "24.99", category: "Akcesoria" },
-  { id: 103, name: "Podbierak Teleskopowy", price: "89.00", category: "Akcesoria" },
-];
-
 const MapArea = () => {
   const [lakes, setLakes] = useState([]);
   const [spots, setSpots] = useState([]);
   const [existingOrders, setExistingOrders] = useState([]);
-  const [userCartHasReservation, setUserCartHasReservation] = useState(false); // NOWE: Stan przechowujący informację o rezerwacji w koszyku
+  const [userCartHasReservation, setUserCartHasReservation] = useState(false);
 
   const [selectedLakeId, setSelectedLakeId] = useState(null);
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState(null); // Przechowuje wybrany slot (DAY lub NIGHT)
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   const currentLake = lakes.find(lake => lake.id === selectedLakeId) || null;
-  
+
   const today = new Date();
-  const todayString = today.toLocaleDateString('en-CA'); 
+  const todayString = today.toLocaleDateString('en-CA');
   const currentHour = today.getHours();
   const userId = localStorage.getItem('userId');
 
-  // NOWE: Pobieranie koszyka użytkownika, aby sprawdzić obecność rezerwacji
+  const [recommendations, setRecommendations] = useState([]);
+
   const fetchCartReservationStatus = useCallback(() => {
     if (!userId) return;
-    
+
     fetch(`${API_BASE_URL}/cart/${userId}/reservation`)
       .then(res => {
         if (res.ok) return res.json();
@@ -65,12 +60,7 @@ const MapArea = () => {
       .then(res => res.json())
       .then(data => {
         const enrichedLakes = data.map(lake => {
-          let imagePath = lake.image;
-          if (!imagePath) {
-            if (lake.id === 1) imagePath = "/lake-map.jpg";
-            else if (lake.id === 2) imagePath = "/lake-map-2.jpg";
-            else imagePath = "/lake-map.jpg";
-          }
+          let imagePath = lake.fisheryUrl;
           return { ...lake, image: imagePath };
         });
 
@@ -82,10 +72,9 @@ const MapArea = () => {
       .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
   }, []);
 
-  // 2. Pobieranie stanowisk i pozycjonowanie na mapie
   useEffect(() => {
     if (!selectedLakeId) return;
-    
+
     fetch(`${API_BASE_URL}/stands/fishery/${selectedLakeId}`)
       .then(res => res.json())
       .then(data => {
@@ -104,8 +93,8 @@ const MapArea = () => {
           const coords = defaultCoordinates[index % defaultCoordinates.length];
           return {
             ...spot,
-            top: spot.top || coords.top,   
-            left: spot.left || coords.left, 
+            top: spot.top || coords.top,
+            left: spot.left || coords.left,
             name: spot.name || `Stanowisko ${spot.id}`
           };
         });
@@ -115,7 +104,6 @@ const MapArea = () => {
       .catch(err => console.error("Błąd podczas pobierania stanowisk:", err));
   }, [selectedLakeId]);
 
-  // 3. Pobieranie wszystkich zamówień w celu weryfikacji zajętości terminów
   const fetchOrders = useCallback(() => {
     fetch(`${API_BASE_URL}/orders/all`)
       .then(res => res.json())
@@ -125,14 +113,13 @@ const MapArea = () => {
       .catch(err => console.error("Błąd podczas pobierania zamówień:", err));
   }, []);
 
-  // REAKTYWNOŚĆ: Wywołaj pobieranie za KAŻDYM RAZEM, gdy użytkownik zmieni parametry
   useEffect(() => {
     fetchOrders();
   }, [selectedDate, selectedLakeId, selectedSpot, fetchOrders]);
 
   const handleLakeChange = (e) => {
     setSelectedLakeId(parseInt(e.target.value));
-    setSelectedSpot(null); 
+    setSelectedSpot(null);
     setSelectedDate("");
     setSelectedSlot(null);
   };
@@ -140,13 +127,11 @@ const MapArea = () => {
   const isSlotDisabled = (slot) => {
     if (!selectedSpot || !selectedDate) return true;
 
-    // 1. Zabezpieczenie przed przeszłością (jeśli dzisiaj minęła już godzina startu)
     if (selectedDate === todayString) {
       if (slot.id === 'DAY' && currentHour >= 18) return true;
-      if (slot.id === 'NIGHT' && currentHour >= 6) return true; 
+      if (slot.id === 'NIGHT' && currentHour >= 6) return true;
     }
 
-    // 2. Sprawdzenie zajętości w pobranych, aktualnych zamówieniach
     return existingOrders.some(order => {
       if (order.status === 'CANCELLED' || order.status === 'ANULOWANE') {
         return false;
@@ -162,8 +147,8 @@ const MapArea = () => {
         orderDate = orderDate.split('T')[0];
       }
 
-      const isSameDate = orderDate === selectedDate || 
-                         (order.startTime && order.startTime.startsWith(selectedDate));
+      const isSameDate = orderDate === selectedDate ||
+        (order.startTime && order.startTime.startsWith(selectedDate));
 
       if (!isSameDate) return false;
 
@@ -172,7 +157,7 @@ const MapArea = () => {
     });
   };
 
-  // 4. Złożenie zamówienia do bazy danych z przekazaniem daty
+
   const handleAddToCart = async () => {
     if (!selectedSpot || !selectedDate || !selectedSlot) return;
 
@@ -189,13 +174,13 @@ const MapArea = () => {
 
     const payload = {
       fishingStand: { id: selectedSpot.id },
-      reservationDate: selectedDate, 
-      startTime: selectedSlot.start, 
-      endTime: selectedSlot.end      
+      reservationDate: selectedDate,
+      startTime: selectedSlot.start,
+      endTime: selectedSlot.end
     };
 
     try {
-      const response = await fetch(`/api/cart/${userId}/reservation`, {
+      const response = await fetch(`${API_BASE_URL}/cart/${userId}/reservation`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
@@ -204,14 +189,66 @@ const MapArea = () => {
       });
 
       if (response.ok) {
-        setShowModal(true); 
-        fetchCartReservationStatus(); // Odśwież stan koszyka po udanej rezerwacji
+        fetch(`${API_BASE_URL}/produkty/lowisko/${selectedLakeId}`)
+          .then(res => res.json())
+          .then(data => {
+            const produkty = data || [];
+
+            const posortowaneOdNajdrozszych = [...produkty].sort((a, b) => {
+              const cenaA = parseFloat(a.price);
+              const cenaB = parseFloat(b.price);
+              return cenaB - cenaA;
+            });
+
+            const topTrzyRozne = [];
+            const znalezioneKategorie = new Set();
+
+            for (const prod of posortowaneOdNajdrozszych) {
+              const kat = prod.kategoria || prod.category;
+
+              if (!znalezioneKategorie.has(kat)) {
+                znalezioneKategorie.add(kat);
+                topTrzyRozne.push(prod);
+              }
+
+              if (topTrzyRozne.length === 3) break;
+            }
+
+            const resztaProduktow = posortowaneOdNajdrozszych.filter(
+              prod => !topTrzyRozne.some(topProd => topProd.id === prod.id)
+            );
+
+            // 4. Łączymy: na początku 3 wyjątkowe, potem cała reszta
+            const ostatecznaLista = [...topTrzyRozne, ...resztaProduktow];
+            const ostatecznaLista2 = ostatecznaLista.slice(0, 6);
+            setRecommendations(ostatecznaLista2);
+          })
+          .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
+
+        setShowModal(true);
+        fetchCartReservationStatus();
       } else {
         alert("Nie udało się dodać rezerwacji do koszyka.");
       }
     } catch (error) {
       console.error("Błąd zapisu rezerwacji w koszyku:", error);
     }
+  };
+
+    const handleQuickAdd = (productId) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert('Zaloguj się, aby dodać artykuł do koszyka.');
+      return;
+    }
+    fetch(`/api/cart/${userId}/add?productId=${productId}&quantity=1`, {
+      method: 'POST'
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Nie udało się dodać produktu.');
+        window.dispatchEvent(new Event('cartUpdated'));
+      })
+      .catch((err) => alert(err.message));
   };
 
   return (
@@ -224,7 +261,7 @@ const MapArea = () => {
             <h2 className="text-2xl font-black tracking-wide">Wybierz Łowisko:</h2>
           </div>
           <div className="relative w-full sm:w-72 text-slate-900">
-            <select 
+            <select
               className="w-full appearance-none bg-white p-3 pr-10 rounded-xl font-bold border-2 border-transparent focus:border-blue-500 outline-none cursor-pointer shadow-sm"
               value={selectedLakeId || ""}
               onChange={handleLakeChange}
@@ -242,10 +279,10 @@ const MapArea = () => {
           <div className="w-full lg:w-2/3 p-8 bg-slate-50 relative min-h-[500px] flex items-center justify-center">
             <div className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
               {currentLake?.image && (
-                <img src={currentLake.image} alt={currentLake.name} className="w-full h-auto object-cover aspect-video" />
+                <img src={currentLake.image} alt={currentLake.name} className="w-full h-auto object-cover" />
               )}
               <div className="absolute inset-0 bg-slate-900/20 pointer-events-none"></div>
-              
+
               {spots.map((spot) => {
                 const available = spot.isAvailable;
                 const isSelected = selectedSpot?.id === spot.id;
@@ -257,11 +294,10 @@ const MapArea = () => {
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-125 z-10"
                     style={{ top: spot.top, left: spot.left }}
                   >
-                    <div className={`relative flex items-center justify-center w-10 h-10 rounded-full shadow-xl border-2 transition-colors ${
-                      !available 
+                    <div className={`relative flex items-center justify-center w-10 h-10 rounded-full shadow-xl border-2 transition-colors ${!available
                         ? (isSelected ? 'bg-red-600 border-red-300 scale-110 ring-4 ring-red-500/50 text-white' : 'bg-red-500 border-red-700 hover:bg-red-600 text-white')
                         : (isSelected ? 'bg-blue-600 border-blue-300 scale-110 ring-4 ring-blue-500/50 text-white' : 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white')
-                    }`}>
+                      }`}>
                       <span className="font-bold text-sm text-white">{spot.id}</span>
                     </div>
                   </button>
@@ -290,7 +326,7 @@ const MapArea = () => {
                     <p className="text-xs text-red-500/80 mt-1">Wybierz inne stanowisko na mapie.</p>
                   </div>
                 </div>
-                
+
                 <div className="mt-8 pt-4 border-t border-slate-100 opacity-50 pointer-events-none">
                   <button disabled className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl font-bold text-lg bg-slate-200 text-slate-400 cursor-not-allowed">
                     Niedostępne
@@ -298,7 +334,7 @@ const MapArea = () => {
                 </div>
               </div>
             ) : (
-              <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col justify-between">
+              <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
                 <div>
                   <div className="mb-6">
                     <span className="inline-flex px-3 py-1 rounded-full text-xs font-bold mb-4 bg-blue-100 text-blue-700">Wybrane stanowisko</span>
@@ -310,12 +346,12 @@ const MapArea = () => {
                     <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-3">
                       <Calendar size={16} className="text-blue-500" /> Wybierz dzień
                     </label>
-                    <input 
-                      type="date" 
-                      min={todayString} 
-                      value={selectedDate} 
-                      onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(null); }} 
-                      className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium" 
+                    <input
+                      type="date"
+                      min={todayString}
+                      value={selectedDate}
+                      onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(null); }}
+                      className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
                     />
                   </div>
 
@@ -325,24 +361,23 @@ const MapArea = () => {
                       <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
                         <Clock size={16} className="text-blue-500" /> Wybierz porę rezerwacji
                       </label>
-                      
+
                       <div className="grid grid-cols-1 gap-3">
                         {RESERVATION_SLOTS.map(slot => {
                           const disabled = isSlotDisabled(slot);
                           const isSelected = selectedSlot?.id === slot.id;
-                          
+
                           return (
                             <button
                               key={slot.id}
                               disabled={disabled}
                               onClick={() => setSelectedSlot(slot)}
-                              className={`w-full p-4 rounded-2xl border text-left transition-all flex justify-between items-center ${
-                                disabled 
-                                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60' 
+                              className={`w-full p-4 rounded-2xl border text-left transition-all flex justify-between items-center ${disabled
+                                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
                                   : isSelected
                                     ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-500/20'
                                     : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
-                              }`}
+                                }`}
                             >
                               <div>
                                 <p className="font-bold text-base">{slot.name}</p>
@@ -368,11 +403,10 @@ const MapArea = () => {
 
                 {/* Sekcja podsumowania i Przycisku */}
                 <div className="mt-8 pt-4 border-t border-slate-100">
-                  <div className={`flex justify-between items-center mb-4 p-4 rounded-xl border transition-all ${
-                    selectedSlot 
-                      ? 'bg-blue-50/60 border-blue-100' 
+                  <div className={`flex justify-between items-center mb-4 p-4 rounded-xl border transition-all ${selectedSlot
+                      ? 'bg-blue-50/60 border-blue-100'
                       : 'bg-slate-50 border-slate-200 opacity-60'
-                  }`}>
+                    }`}>
                     <span className="text-slate-700 font-medium flex items-center gap-1">
                       <DollarSign size={16} className={selectedSlot ? 'text-blue-600' : 'text-slate-400'} /> Do zapłaty:
                     </span>
@@ -380,15 +414,15 @@ const MapArea = () => {
                       {selectedSlot ? `${selectedSlot.price} PLN` : '0 PLN'}
                     </span>
                   </div>
-                  
+
                   {/* WARUNKOWY PRZYCISK: Jeśli rezerwacja jest już w koszyku, pokazujemy żółty przycisk blokady */}
                   {userCartHasReservation ? (
                     <div className="w-full flex flex-col gap-2 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800">
-                      <button 
+                      <button
                         disabled
                         className="w-full flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-lg bg-amber-500 text-white cursor-not-allowed opacity-90 shadow-sm"
                       >
-                        <AlertTriangle size={24} /> 
+                        <AlertTriangle size={24} />
                         Rezerwacja niemożliwa
                       </button>
                       <p className="text-xs font-semibold text-center mt-1">
@@ -397,20 +431,19 @@ const MapArea = () => {
                     </div>
                   ) : (
                     /* Standardowy przycisk rezerwacji */
-                    <button 
-                      onClick={handleAddToCart} 
+                    <button
+                      onClick={handleAddToCart}
                       disabled={!selectedSlot}
-                      className={`w-full flex items-center justify-center gap-2 p-4 rounded-2xl font-bold text-lg transition-all ${
-                        selectedSlot 
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-1 cursor-pointer' 
+                      className={`w-full flex items-center justify-center gap-2 p-4 rounded-2xl font-bold text-lg transition-all ${selectedSlot
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-1 cursor-pointer'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70'
-                      }`}
+                        }`}
                     >
-                      <CheckCircle size={24} /> 
-                      {!selectedDate 
-                        ? 'Wybierz datę' 
-                        : !selectedSlot 
-                          ? 'Wybierz porę rezerwacji' 
+                      <CheckCircle size={24} />
+                      {!selectedDate
+                        ? 'Wybierz datę'
+                        : !selectedSlot
+                          ? 'Wybierz porę rezerwacji'
                           : 'Rezerwuj stanowisko'}
                     </button>
                   )}
@@ -440,23 +473,28 @@ const MapArea = () => {
 
             <div className="p-8 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {MOCK_RECOMMENDATIONS.map(item => (
-                  <div key={item.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
-                    <Link to={`/sklep/produkt/${item.id}`} className="block relative h-48 bg-slate-100 overflow-hidden flex items-center justify-center">
-                      <ImageIcon size={48} className="text-slate-300 group-hover:scale-110 transition-transform duration-500" />
-                    </Link>
-                    <div className="p-5 flex flex-col flex-grow">
-                      <span className="text-xs font-bold text-blue-500 uppercase mb-1">{item.category}</span>
-                      <h4 className="font-bold text-slate-800 mb-4 line-clamp-2">{item.name}</h4>
-                      <div className="mt-auto flex items-center justify-between">
-                        <span className="text-xl font-black text-slate-900">{item.price} zł</span>
-                        <button className="bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white p-2.5 rounded-xl transition-colors">
-                          <ShoppingBag size={20} />
-                        </button>
+                {recommendations.map((product) => {
+                  const isAvailable = product.stockQuantity > 0;
+                  return (
+                    <div key={product.id} className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl flex flex-col overflow-hidden transition-all duration-300">
+                      <Link to={`/sklep/produkt/${product.id}`} className="block relative aspect-square bg-slate-100 overflow-hidden">
+                        {product.productUrl ? <img src={product.productUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" /> : <div className="w-full h-full flex flex-col items-center justify-center text-slate-400"><ImageIcon size={40} /><span className="text-xs">Brak zdjęcia</span></div>}
+                      </Link>
+                      <div className="p-6 flex flex-col flex-grow">
+                        <span className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">{product.category}</span>
+                        <Link to={`/sklep/produkt/${product.id}`} className="hover:text-blue-600 font-bold text-xl text-slate-800 line-clamp-2 mb-2">{product.name}</Link>
+                        <p className="text-slate-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+                        <div className="mt-auto flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <span className="text-2xl font-black text-slate-900">{product.price?.toFixed(2)} zł</span>
+                            <span className={`text-xs font-medium mt-0.5 ${isAvailable ? 'text-emerald-600' : 'text-rose-500'}`}>{isAvailable ? `W magazynie: ${product.stockQuantity} szt.` : 'Brak na stanie'}</span>
+                          </div>
+                          <button onClick={() => handleQuickAdd(product.id)} disabled={!isAvailable} className={`p-3 rounded-xl transition-all ${isAvailable ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400'}`}><ShoppingCart size={20} /></button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
