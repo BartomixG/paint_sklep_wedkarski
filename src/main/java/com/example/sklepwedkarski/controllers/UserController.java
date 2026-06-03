@@ -20,8 +20,15 @@ import com.example.sklepwedkarski.service.UserService;
 
 @RestController
 @RequestMapping(value = "/api/users", produces = "application/json;charset=UTF-8")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
-public class UserController {
+@CrossOrigin(
+      origins = {
+          "http://localhost:5173",
+          "https://bartomix.tailc381e2.ts.net",
+          "https://bartomiejs-macbook-pro.tailc381e2.ts.net"
+      },
+      allowCredentials = "true"
+  )
+  public class UserController {
 
     @Autowired
     private UserService userService;

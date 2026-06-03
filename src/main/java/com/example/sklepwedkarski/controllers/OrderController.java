@@ -21,8 +21,15 @@ import com.example.sklepwedkarski.service.OrderService;
 
 @RestController
 @RequestMapping(value = "/api/orders", produces = "application/json;charset=UTF-8")
-@CrossOrigin(origins = "http://localhost:5173")
-public class OrderController {
+@CrossOrigin(
+      origins = {
+          "http://localhost:5173",
+          "https://bartomix.tailc381e2.ts.net",
+          "https://bartomiejs-macbook-pro.tailc381e2.ts.net"
+      },
+      allowCredentials = "true"
+  )
+  public class OrderController {
 
     @Autowired
     private OrderService orderService;

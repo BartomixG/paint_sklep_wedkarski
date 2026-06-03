@@ -37,7 +37,7 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Zezwalamy na ruch z Twojego frontendu w React (Vite)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://bartomix.tailc381e2.ts.net", "https://bartomiejs-macbook-pro.tailc381e2.ts.net"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

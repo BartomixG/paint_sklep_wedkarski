@@ -18,8 +18,15 @@ import com.example.sklepwedkarski.service.FishingStandService;
 
 @RestController
 @RequestMapping(value = "/api/stands", produces = "application/json;charset=UTF-8")
-@CrossOrigin(origins = "http://localhost:5173")
-public class FishingStandController {
+@CrossOrigin(
+      origins = {
+          "http://localhost:5173",
+          "https://bartomix.tailc381e2.ts.net",
+          "https://bartomiejs-macbook-pro.tailc381e2.ts.net"
+      },
+      allowCredentials = "true"
+  )
+  public class FishingStandController {
 
     @Autowired
     private FishingStandService fishingStandService;
