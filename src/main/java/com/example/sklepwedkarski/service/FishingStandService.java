@@ -50,6 +50,8 @@ public class FishingStandService {
         if (fishery.isPresent()) {
             stand.setFishery(fishery.get());
             stand.setIsAvailable(true);
+            stand.setXPos(stand.getXPos());
+            stand.setYPos(stand.getYPos());
             return Optional.of(fishingStandRepository.save(stand));
         }
         return Optional.empty();
