@@ -40,17 +40,17 @@ INSERT INTO lowisko (id, nazwa, opis, lowisko_url) VALUES
 (4, 'Dunajec', 'Górska rzeka z krystaliczną wodą, kraina pstrąga i lipienia.', '/images/fishery/dunajec.jpg'),
 (5, 'Jezioro Solińskie', 'Bieszczadzkie morze. Głębokie łowisko dla wymagających łowców sumów i sandaczy.', '/images/fishery/solina.jpg'),
 (6, 'Śniardwy', 'Największe polskie jezioro. Ogromna przestrzeń i wielkie szczupaki.', '/images/fishery/sniardwy.jpg'),
-(7, 'Jezioro Goczałowickie', 'Zbiornik zaporowy na Wiśle, tzw. Śląskie Morze.', '/images/fishery/goczalowice.jpg'),
+(7, 'Jezioro Goczałkowickie', 'Zbiornik zaporowy na Wiśle, tzw. Śląskie Morze.', '/images/fishery/goczalkowice.jpg'),
 (8, 'Zalew Szczeciński', 'Rozległy akwen na granicy z Niemcami, świetny na sandacza.', '/images/fishery/szczecinski.jpg'),
 (9, 'Jezioro Kisajno', 'Część kompleksu Mamr, słynie z licznych wysp i czystej wody.', '/images/fishery/kisajno.jpg'),
 (10, 'Jezioro Nyskie', 'Bardzo popularne łowisko sandaczowe na południu Polski.', '/images/fishery/nyskie.jpg'),
-(11, 'Zalew Wrocławski (Mietków)', 'Największy zbiornik na Dolnym Śląsku, słynący z potężnych sandaczy.', '/images/fishery/mietkow.jpg'),
-(12, 'Jezioro Gardno', 'Przymorskie jezioro w Słowińskim Parku Narodowym. Płytkie, ale pełne szczupaków.', '/images/fishery/gardno.jpg'),
+(11, 'Jezioro Mietkowskie', 'Największy zbiornik na Dolnym Śląsku, słynący z potężnych sandaczy.', '/images/fishery/mietkow.jpg'),
+(12, 'Jezioro Dąbie', 'Czwarte co do wielkości jezioro w Polsce, położone w dolinie dolnej Odry. Słynie z unikalnego wraku betonowca i ogromnych sandaczy.', '/images/fishery/dabie.jpg'),
 (13, 'Jezioro Miedwie', 'Piąte co do wielkości jezioro w Polsce, dom rzadkiej sielawy i wielkich okoni.', '/images/fishery/miedwie.jpg'),
 (14, 'Jezioro Mamry', 'Drugie co do wielkości jezioro w Polsce, o krystalicznie czystej wodzie.', '/images/fishery/mamry.jpg'),
-(15, 'Rzeka Wisła (Warszawa)', 'Miejski odcinek królowej polskich rzek. Świetne miejsce na nocne sumy.', '/images/fishery/wisla_wawa.jpg'),
-(16, 'Rzeka Odra (Wrocław)', 'Malownicze odnogi i kanały Odry, idealne na feeder i spinning.', '/images/fishery/odra_wro.jpg'),
-(17, 'Zalew Wiślany', 'Ogromny akwen mieszający wody słodkie i słone. Królestwo sandacza.', '/images/fishery/zalew_wislany.jpg'),
+(15, 'Rzeka Wisła', 'Królowa polskich rzek. Świetne miejsce na nocne sumy.', '/images/fishery/wisla.jpg'),
+(16, 'Rzeka Odra', 'Malownicze odnogi i kanały Odry, idealne na feeder i spinning.', '/images/fishery/odra.jpg'),
+(17, 'Zalew Wiślany', 'Ogromny akwen mieszający wody słodkie i słone. Królestwo sandacza.', '/images/fishery/wislany.jpg'),
 (18, 'Jezioro Wigry', 'Głębokie, suwalskie jezioro z unikalnym mikroklimatem i sieją.', '/images/fishery/wigry.jpg'),
 (19, 'Zatoka Pucka', 'Płytka część Bałtyku, idealna na belonę i okonia morskiego.', '/images/fishery/pucka.jpg'),
 (20, 'Rzeka Bug', 'Jedna z ostatnich dzikich rzek Europy. Piękne krajobrazy i silne brany.', '/images/fishery/bug.jpg');
@@ -68,7 +68,7 @@ INSERT INTO lowisko_ryba (lowisko_id, ryba_id) VALUES
 (9, 2), (9, 15),                        -- Kisajno: Szczupak, Lin
 (10, 17), (10, 4),                      -- Nyskie: Sandacz, Okoń
 (11, 17), (11, 11), (11, 8),            -- Mietków: Sandacz, Leszcz, Bieługa
-(12, 2), (12, 12),                      -- Gardno: Szczupak, Karaś
+(12, 2), (12, 17), (12, 4), (12, 5),    -- Dąbie: Szczupak, Sandacz, Okoń, Sum
 (13, 11), (13, 4),                      -- Miedwie: Leszcz, Okoń
 (14, 2), (14, 15), (14, 10),            -- Mamry: Szczupak, Lin, Węgorz
 (15, 5), (15, 11), (15, 17), (15, 7),   -- Wisła: Sum, Leszcz, Sandacz, Jesiotr
@@ -79,27 +79,27 @@ INSERT INTO lowisko_ryba (lowisko_id, ryba_id) VALUES
 (20, 5), (20, 11), (20, 13), (20, 14);  -- Bug: Sum, Leszcz, Świnka, Kiełb
 
 truncate table stanowisko;
-INSERT INTO stanowisko (lowisko_id, numer_stanowiska, czy_dostepne) VALUES
-(1, 'Z-ZEG-01', true), (1, 'Z-ZEG-SEROCK', true), (1, 'Z-ZEG-NIEPORET', false),
-(2, 'R-PIL-NOWEMIASTO', true), (2, 'R-PIL-SULEJOW', true), (2, 'R-PIL-WARKA', false),
-(3, 'M-GDA-SOPOT', true), (3, 'M-GDA-HEL', true), (3, 'M-GDA-GDYNIA', false),
-(4, 'R-DUN-NOWYTARG', true), (4, 'R-DUN-SROMOWCE', true), (4, 'R-DUN-KROSCIENKO', true),
-(5, 'J-SOL-POLANCZYK', true), (5, 'J-SOL-JAWORNIK', false), (5, 'J-SOL-ZAPORA', true),
-(6, 'J-SNI-MIKOLAJKI', true), (6, 'J-SNI-OKARTOWO', true), (6, 'J-SNI-LUKNAJNO', false),
-(7, 'J-GOC-ZAPORA', true), (7, 'J-GOC-WISLAMAŁA', true), (7, 'J-GOC-STRUMIEN', true),
-(8, 'Z-SZC-TRZEBIEZ', true), (8, 'Z-SZC-NOWEWARPNO', false), (8, 'Z-SZC-WOLIN', true),
-(9, 'J-KIS-GIZYCKO', true), (9, 'J-KIS-PIEKNAGORA', true), (9, 'J-KIS-WYSPA', false),
-(10, 'J-NYS-PLAZA', true), (10, 'J-NYS-GLEBINOW', true), (10, 'J-NYS-ZAPORA', false),
-(11, 'Z-WRO-BORZYGNIEW', true), (11, 'Z-WRO-MANIOW', true), (11, 'Z-WRO-DMANIOW', false),
-(12, 'J-GAR-ROWY', true), (12, 'J-GAR-RETYKA', true), (12, 'J-GAR-SMOLDZINO', true),
-(13, 'J-MIE-WIERZCHLAD', true), (13, 'J-MIE-MORZYCZYN', false), (13, 'J-MIE-ZELEWO', true),
-(14, 'J-MAM-WEGORZEWO', true), (14, 'J-MAM-KIRSAJTY', true), (14, 'J-MAM-KAL', false),
-(15, 'R-WIS-WAWA-CENT', true), (15, 'R-WIS-TYNIEC', true), (15, 'R-WIS-PLOCK', false),
-(16, 'R-ODR-WRO-KANAŁ', true), (16, 'R-ODR-SZCZ-WAŁY', true), (16, 'R-ODR-SLUBICE', false),
-(17, 'Z-WIS-FROMBORK', true), (17, 'Z-WIS-KRYNICA', true), (17, 'Z-WIS-TOLKMICKO', false),
-(18, 'J-WIG-KLASZTOR', true), (18, 'J-WIG-STARYFOLWARK', true), (18, 'J-WIG-BRYZGIEW', false),
-(19, 'M-PUC-PUCK', true), (19, 'M-PUC-REWA', true), (19, 'M-PUC-CHALUPY', false),
-(20, 'R-BUG-DROHICZYN', true), (20, 'R-BUG-MEREWICZ', true), (20, 'R-BUG-KRYLOW', false);
+INSERT INTO stanowisko (lowisko_id, numer_stanowiska, czy_dostepne, x_pos, y_pos) VALUES
+(1, 'Z-ZEG-JADWISIN', true, 67.74, 59.60), (1, 'Z-ZEG-SEROCK', true, 74.48, 34.11), (1, 'Z-ZEG-NIEPORET', true, 56.50, 92.72),
+(2, 'R-PIL-NOWEMIASTO', true, 55.97, 19.89), (2, 'R-PIL-SULEJOW', true, 18.66, 37.24), (2, 'R-PIL-WARKA', false, 89.25, 8.51),
+(3, 'M-GDA-KRYNICAMORSKA', true, 65.66, 88.91), (3, 'M-GDA-HEL', true, 28.09, 49.36), (3, 'M-GDA-WLADYSLAWOWO', false, 8.41, 28.94),
+(4, 'R-DUN-NOWYTARG', true, 6.61, 4.60), (4, 'R-DUN-SROMOWCE', true, 33.86, 92.27), (4, 'R-DUN-KROSCIENKO', true, 43.92, 89.32),
+(5, 'J-SOL-POLANCZYK', true, 25.18, 26.92), (5, 'J-SOL-JAWORNIK', false, 12.59, 80.96), (5, 'J-SOL-ZAPORA', true, 38.98, 6.54),
+(6, 'J-SNI-NOWEGUTY', true, 90.48, 30.96), (6, 'J-SNI-OKARTOWO', true, 91.98, 8.00), (6, 'J-SNI-LUKNAJNO', true, 30.83, 15.30),
+(7, 'J-GOC-ZAPORA', true, 93.64, 26.13), (7, 'J-GOC-WISLAMAŁA', true, 8.22, 49.79), (7, 'J-GOC-STRUMIEN', true, 49.78, 89.09),
+(8, 'Z-SZC-TRZEBIEZ', true, 69.22, 73.80), (8, 'Z-SZC-NOWEWARPNO', false, 21.13, 52.79), (8, 'Z-SZC-WOLIN', true, 89.50, 15.43),
+(9, 'J-KIS-GIZYCKO', true, 94.44, 80.74), (9, 'J-KIS-PIEKNAGORA', true, 76.05, 92.90), (9, 'J-KIS-WYSPA', true, 61.49, 51.46),
+(10, 'J-NYS-PLAZA', true, 48.98, 22.69), (10, 'J-NYS-GLEBINOW', true, 65.40, 19.13), (10, 'J-NYS-ZAPORA', false, 73.87, 2.37),
+(11, 'J-MIE-BORZYGNIEW', true, 63.81, 18.27), (11, 'J-MIE-MANIOW', true, 88.13, 75.80), (11, 'J-MIE-DOMANICE', false, 15.16, 86.46),
+(12, 'J-DAB-LUBCZYNA', true, 86.51, 25.68), (12, 'J-DAB-CZARNALAKA', true, 92.08, 55.41), (12, 'J-DAB-RYBAKI', true, 75.80, 8.51),
+(13, 'J-MIE-WIERZCHLAD', true, 67.94, 29.81), (13, 'J-MIE-MORZYCZYN', false, 71.78, 4.39), (13, 'J-MIE-ZELEWO', true, 25.09, 43.48),
+(14, 'J-MAM-WEGORZEWO', true, 70.37, 23.28), (14, 'J-MAM-KIRSAJTY', true, 65.63, 90.35), (14, 'J-MAM-KAL', false, 78.67, 58.26),
+(15, 'R-WIS-WAW', true, 72.70, 46.75), (15, 'R-WIS-TYN', true, 44.09, 90.24), (15, 'R-WIS-PLO', false, 40.42, 40.92),
+(16, 'R-ODR-WRO', true, 67.76, 61.48), (16, 'R-ODR-SZCZ', true, 15.76, 6.58), (16, 'R-ODR-SLU', true, 15.29, 32.74),
+(17, 'Z-WIS-FRO', true, 77.25, 39.75), (17, 'Z-WIS-KRY', true, 39.45, 34.12), (17, 'Z-WIS-TOL', false, 52.64, 53.52),
+(18, 'J-WIG-CIMOCHOWIZNA', true, 52.23, 24.88), (18, 'J-WIG-STARYFOLWARK', true, 60.38, 10.42), (18, 'J-WIG-BRYZGIEL', false, 49.38, 96.06),
+(19, 'M-PUC-PUC', true, 7.73, 24.41), (19, 'M-PUC-REW', true, 31.53, 50.56), (19, 'M-PUC-CHA', true, 27.67, 12.45),
+(20, 'R-BUG-DRO', true, 49.54, 18.68), (20, 'R-BUG-GNO', true, 63.69, 23.68), (20, 'R-BUG-KRY', true, 89.38, 92.21);
 
 truncate table produkt;
 INSERT INTO produkt (id, nazwa, opis, cena, stan_magazynowy, kategoria, produkt_url) VALUES

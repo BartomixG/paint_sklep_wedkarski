@@ -44,6 +44,8 @@ CREATE TABLE stanowisko (
     lowisko_id INT NOT NULL,
     numer_stanowiska VARCHAR(30) NOT NULL,
     czy_dostepne BOOLEAN DEFAULT TRUE,
+    x_pos DECIMAL(5,2) DEFAULT 0.00,
+    y_pos DECIMAL(5,2) DEFAULT 0.00,
     FOREIGN KEY (lowisko_id) REFERENCES lowisko(id) ON DELETE CASCADE
 );
 
@@ -98,12 +100,3 @@ CREATE TABLE produkt_ryba (
     FOREIGN KEY (produkt_id) REFERENCES produkt(id) ON DELETE CASCADE,
     FOREIGN KEY (ryba_id) REFERENCES ryba(id) ON DELETE CASCADE
 );
-
--- Zmiana kodowania całej bazy danych
-ALTER DATABASE mydatabase CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Zmiana kodowania konkretnych tabel (wykonaj dla każdej tabeli, np. produkt, uzytkownik)
-ALTER TABLE produkt CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE uzytkownik CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE zamowienie CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE zamowione_produkty MODIFY cena_zakupu DECIMAL(10,2) NULL;
