@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "stanowisko")
@@ -31,10 +32,19 @@ public class FishingStand {
     @Column(name = "czy_dostepne")
     private Boolean isAvailable;
 
-    public FishingStand(Fishery fishery, String standNumber, Boolean isAvailable) {
+    @Column(name = "x_pos")
+    private BigDecimal xPos;
+
+    @Column(name = "y_pos")
+    private BigDecimal yPos;
+
+
+    public FishingStand(Fishery fishery, String standNumber, Boolean isAvailable, BigDecimal xPos, BigDecimal yPos) {
         this.fishery = fishery;
         this.standNumber = standNumber;
         this.isAvailable = isAvailable;
+        this.xPos = xPos;
+        this.yPos = yPos;
     }
 
     @Override
