@@ -36,6 +36,8 @@ services:
       SPRING_JPA_SHOW_SQL: "false"
     expose:
       - "8080"
+    volumes:
+      - fishery_uploads:/app/uploads
 
   web:
     build:
@@ -47,6 +49,9 @@ services:
       - backend
     ports:
       - "80:80"
+    volumes:
+      - fishery_uploads:/usr/share/nginx/html/uploads:ro
 
 volumes:
   mysql_prod_data:
+  fishery_uploads:

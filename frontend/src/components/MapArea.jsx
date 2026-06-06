@@ -55,22 +55,22 @@ const MapArea = () => {
   }, [fetchCartReservationStatus]);
 
   // 1. Pobieranie łowisk z bazy i zabezpieczenie brakujących zdjęć
-useEffect(() => {
+  useEffect(() => {
     fetch(`${API_BASE_URL}/fisheries`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error(`HTTP error! Status: ${res.status}`);
-            }
-            return res.json();
-        })
-        .then(data => {
-            setLakes(data);
-            if (data.length > 0) {
-                setSelectedLakeId(data[0].id);
-            }
-        })
-        .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
-}, []);
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        setLakes(data);
+        if (data.length > 0) {
+          setSelectedLakeId(data[0].id);
+        }
+      })
+      .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
+  }, []);
 
   useEffect(() => {
     if (!selectedLakeId) return;
@@ -214,7 +214,7 @@ useEffect(() => {
     }
   };
 
-    const handleQuickAdd = (productId) => {
+  const handleQuickAdd = (productId) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
       alert('Zaloguj się, aby dodać artykuł do koszyka.');
@@ -274,8 +274,8 @@ useEffect(() => {
                     style={{ top: `${spot.yPos}%`, left: `${spot.xPos}%` }}
                   >
                     <div className={`relative flex items-center justify-center w-10 h-10 rounded-full shadow-xl border-2 transition-colors ${!available
-                        ? (isSelected ? 'bg-red-600 border-red-300 scale-110 ring-4 ring-red-500/50 text-white' : 'bg-red-500 border-red-700 hover:bg-red-600 text-white')
-                        : (isSelected ? 'bg-blue-600 border-blue-300 scale-110 ring-4 ring-blue-500/50 text-white' : 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white')
+                      ? (isSelected ? 'bg-red-600 border-red-300 scale-110 ring-4 ring-red-500/50 text-white' : 'bg-red-500 border-red-700 hover:bg-red-600 text-white')
+                      : (isSelected ? 'bg-blue-600 border-blue-300 scale-110 ring-4 ring-blue-500/50 text-white' : 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-white')
                       }`}>
                       <span className="font-bold text-sm text-white">{spot.id}</span>
                     </div>
@@ -287,6 +287,14 @@ useEffect(() => {
 
           {/* Prawa strona: Formularz rezerwacji */}
           <div className="w-full lg:w-1/3 p-8 border-l border-slate-100 bg-white">
+            {currentLake?.description && (
+              <div className="w-full max-w-3xl bg-white/80 backdrop-blur-md border border-slate-200/60 p-4 rounded-2xl shadow-sm animate-in slide-in-from-top-3 duration-300 mb-6">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">O łowisku</h4>
+                <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                  {currentLake.description}
+                </p>
+              </div>
+            )}
             {!selectedSpot ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-4">
                 <MapPin size={48} className="opacity-20" />
@@ -352,10 +360,10 @@ useEffect(() => {
                               disabled={disabled}
                               onClick={() => setSelectedSlot(slot)}
                               className={`w-full p-4 rounded-2xl border text-left transition-all flex justify-between items-center ${disabled
-                                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                                  : isSelected
-                                    ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-500/20'
-                                    : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
+                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                                : isSelected
+                                  ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-500/20'
+                                  : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
                                 }`}
                             >
                               <div>
@@ -383,8 +391,8 @@ useEffect(() => {
                 {/* Sekcja podsumowania i Przycisku */}
                 <div className="mt-8 pt-4 border-t border-slate-100">
                   <div className={`flex justify-between items-center mb-4 p-4 rounded-xl border transition-all ${selectedSlot
-                      ? 'bg-blue-50/60 border-blue-100'
-                      : 'bg-slate-50 border-slate-200 opacity-60'
+                    ? 'bg-blue-50/60 border-blue-100'
+                    : 'bg-slate-50 border-slate-200 opacity-60'
                     }`}>
                     <span className="text-slate-700 font-medium flex items-center gap-1">
                       <DollarSign size={16} className={selectedSlot ? 'text-blue-600' : 'text-slate-400'} /> Do zapłaty:
@@ -414,8 +422,8 @@ useEffect(() => {
                       onClick={handleAddToCart}
                       disabled={!selectedSlot}
                       className={`w-full flex items-center justify-center gap-2 p-4 rounded-2xl font-bold text-lg transition-all ${selectedSlot
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-1 cursor-pointer'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-1 cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70'
                         }`}
                     >
                       <CheckCircle size={24} />

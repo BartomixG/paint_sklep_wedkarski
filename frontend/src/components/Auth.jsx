@@ -34,7 +34,7 @@ const Auth = () => {
       })
       .then((user) => {
         localStorage.setItem('userId', user.id);
-        localStorage.setItem('userRole', user.userRole || 'USER');
+        localStorage.setItem('userRole', user.userRole);
         window.dispatchEvent(new Event('authChange'));
         navigate('/profil');
       })
