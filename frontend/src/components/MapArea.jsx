@@ -55,22 +55,22 @@ const MapArea = () => {
   }, [fetchCartReservationStatus]);
 
   // 1. Pobieranie łowisk z bazy i zabezpieczenie brakujących zdjęć
-  useEffect(() => {
+useEffect(() => {
     fetch(`${API_BASE_URL}/fisheries`)
-      .then(res => res.json())
-      .then(data => {
-        const enrichedLakes = data.map(lake => {
-          let imagePath = lake.fisheryUrl;
-          return { ...lake, image: imagePath };
-        });
-
-        setLakes(enrichedLakes);
-        if (enrichedLakes.length > 0) {
-          setSelectedLakeId(enrichedLakes[0].id);
-        }
-      })
-      .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
-  }, []);
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            setLakes(data);
+            if (data.length > 0) {
+                setSelectedLakeId(data[0].id);
+            }
+        })
+        .catch(err => console.error("Błąd podczas pobierania łowisk:", err));
+}, []);
 
   useEffect(() => {
     if (!selectedLakeId) return;
@@ -78,28 +78,7 @@ const MapArea = () => {
     fetch(`${API_BASE_URL}/stands/fishery/${selectedLakeId}`)
       .then(res => res.json())
       .then(data => {
-        const defaultCoordinates = [
-          { top: '20%', left: '15%' },
-          { top: '45%', left: '15%' },
-          { top: '45%', left: '65%' },
-          { top: '75%', left: '85%' },
-          { top: '85%', left: '35%' },
-          { top: '35%', left: '45%' },
-          { top: '60%', left: '75%' },
-          { top: '15%', left: '70%' }
-        ];
-
-        const enrichedSpots = (data || []).map((spot, index) => {
-          const coords = defaultCoordinates[index % defaultCoordinates.length];
-          return {
-            ...spot,
-            top: spot.top || coords.top,
-            left: spot.left || coords.left,
-            name: spot.name || `Stanowisko ${spot.id}`
-          };
-        });
-
-        setSpots(enrichedSpots);
+        setSpots(data);
       })
       .catch(err => console.error("Błąd podczas pobierania stanowisk:", err));
   }, [selectedLakeId]);
@@ -278,10 +257,10 @@ const MapArea = () => {
           {/* Lewa strona: Mapa interaktywna */}
           <div className="w-full lg:w-2/3 p-8 bg-slate-50 relative min-h-[500px] flex items-center justify-center">
             <div className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-              {currentLake?.image && (
-                <img src={currentLake.image} alt={currentLake.name} className="w-full h-auto object-cover" />
+              {currentLake?.fisheryUrl && (
+                <img src={currentLake.fisheryUrl} alt={currentLake.name} className="w-full h-auto object-cover" />
               )}
-              <div className="absolute inset-0 bg-slate-900/20 pointer-events-none"></div>
+              <div className="relative inset-0 bg-slate-900/20 pointer-events-none"></div>
 
               {spots.map((spot) => {
                 const available = spot.isAvailable;
@@ -292,7 +271,7 @@ const MapArea = () => {
                     key={spot.id}
                     onClick={() => { setSelectedSpot(spot); setSelectedSlot(null); }}
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-125 z-10"
-                    style={{ top: spot.top, left: spot.left }}
+                    style={{ top: `${spot.yPos}%`, left: `${spot.xPos}%` }}
                   >
                     <div className={`relative flex items-center justify-center w-10 h-10 rounded-full shadow-xl border-2 transition-colors ${!available
                         ? (isSelected ? 'bg-red-600 border-red-300 scale-110 ring-4 ring-red-500/50 text-white' : 'bg-red-500 border-red-700 hover:bg-red-600 text-white')
