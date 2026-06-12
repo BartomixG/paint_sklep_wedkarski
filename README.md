@@ -131,5 +131,3 @@ Aby zatrzymać aplikację, należy wywołać komenedę:
 ```bash
 docker compose down
 ```
-## Prezntacja - link do aplikacji
-https://bartomiejs-macbook-pro.tailc381e2.ts.net/
